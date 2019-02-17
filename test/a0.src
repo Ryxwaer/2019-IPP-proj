@@ -1,0 +1,98 @@
+.IFJcode18
+DEFVAR GF@%tmp1
+DEFVAR GF@%tmp2
+DEFVAR GF@%tmp3
+CREATEFRAME
+PUSHFRAME
+DEFVAR LF@%tmp
+DEFVAR LF@%retval
+JUMP lenght$end
+LABEL length
+PUSHFRAME
+DEFVAR LF@%retval
+DEFVAR LF@s$type
+TYPE LF@s$type LF@s
+JUMPIFEQ $$continue LF@s$type string@string
+EXIT int@4
+LABEL $$continue
+MOVE LF@%retval int@0
+STRLEN LF@%retval LF@s
+POPFRAME
+RETURN
+LABEL lenght$end
+JUMP chr$end
+LABEL chr
+PUSHFRAME
+DEFVAR LF@%retval
+DEFVAR LF@i$type
+TYPE LF@i$type LF@i
+JUMPIFEQ $$$continue LF@i$type string@int
+JUMPIFEQ $$$convert LF@i$type string@float
+EXIT int@4
+LABEL $$$convert
+FLOAT2INT LF@i LF@i
+LABEL $$$continue
+INT2CHAR LF@%retval LF@i
+POPFRAME
+RETURN
+LABEL chr$end
+JUMP ord$end
+LABEL ord
+PUSHFRAME
+DEFVAR LF@%retval
+DEFVAR LF@%tmp
+DEFVAR LF@%decide
+DEFVAR LF@s$type
+TYPE LF@s$type LF@s
+JUMPIFEQ $$$$continue LF@s$type string@string
+EXIT int@4
+LABEL $$$$continue
+STRLEN LF@%tmp LF@s
+DEFVAR LF@i$type
+TYPE LF@i$type LF@i
+JUMPIFEQ $$$$continue2 LF@i$type string@int
+JUMPIFEQ $$$$convert LF@i$type string@float
+EXIT int@4
+LABEL $$$$convert
+FLOAT2INT LF@i LF@i
+LABEL $$$$continue2
+LT LF@%decide LF@i LF@%tmp
+JUMPIFEQ ord$true LF@%decide bool@true
+MOVE LF@%retval nil@nil
+JUMP ord$false
+LABEL ord$true
+STRI2INT LF@%retval LF@s LF@i
+LABEL ord$false
+POPFRAME
+RETURN
+LABEL ord$end
+JUMP inputs$end
+LABEL inputs
+PUSHFRAME
+DEFVAR LF@%retval
+MOVE LF@%retval nil@nil
+READ LF@%retval string
+POPFRAME
+RETURN
+LABEL inputs$end
+JUMP inputi$end
+LABEL inputi
+PUSHFRAME
+DEFVAR LF@%retval
+MOVE LF@%retval int@0
+READ LF@%retval int
+POPFRAME
+RETURN
+LABEL inputi$end
+JUMP inputf$end
+LABEL inputf
+PUSHFRAME
+DEFVAR LF@%retval
+MOVE LF@%retval float@0x0p+0
+READ LF@%retval float
+POPFRAME
+RETURN
+LABEL inputf$end
+DEFVAR LF@mm
+MOVE GF@%tmp1 int@5
+MOVE LF@mm GF@%tmp1

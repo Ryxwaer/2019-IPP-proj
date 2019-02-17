@@ -1,12 +1,36 @@
 <?php
+/////////////////////////////////////////////////
+////     Projekt> Parser IPPcode18 na XML    ////
+//
+// Autor> Jakub Sencak
+// Login> xsenca00
+//
+// Beg>  13-Feb-2019
+// Try>  00-Mar-2019  50-80% ??
+// Dead> 00-Mar-2019
+/////////////////////////////////////////////////
+
+/* Improve:
+ *
+ * Overovat string@
+ *    - string@\010 => escape sekvence
+ **
+ **
+ *
+ **
+ *
+ */
+
 include 'functions.php';
-include 'Errors.php';
 
-//$err = new Errors();
+/***  Global variables  ***/
 
-$line_counter = 1;
+$f = 0; // first header flag
+$line_counter = 1; // necessary for output
+$end_switch = 1; // $#$ not needed
+$input_file = 0; // empty file
+$comment = 0; // comment
 $beg_header = 0; // used to determine the number of header strings ".IPPcode18"
-$param_counter = count($argv);
 
 /***  Error numbers  ***/
 $ERR_MISSING_PARAM = 10; // parameter is missing
@@ -14,91 +38,50 @@ $ERR_INPUT_FILE  = 11;   // error loading input file
 $ERR_OUTPUT_FILE = 12;   // error loading output file
 $ERR_FATAL_ERROR = 99;   // sth went horribly wrong
 $ERR_LEX_SYNTAX  = 21;   // lexical or syntax error
-
-$longopts  = array(
-    "source::",    // Optional value
-    "stat",        // No value
-    "help",           // No value
-);
-$options = getopt("", $longopts);
-var_dump($options);
-
-$help = array_key_exists("help", $options);
-$stat = array_key_exists("stat", $options);
-$stat_en = false;
-$source = array_key_exists("source", $options);
-
-switch (count($options)) {
-    case 0:
-        $file_name = 'php://stdin';
-        break;
-    case 1:
-        if ($help){
-            echo "IPP project #1\n"
-                ."for more information please see the train guide or RTFM!\n";
-            return;
-        }
-        elseif ($source){
-            $file_name = $options["source"];
-        }
-        elseif ($stat){
-            $file_name = 'php://stdin';
-            $stat_en = true;
-        }
-        else{
-            exit($ERR_MISSING_PARAM); //$#$
-        }
-        break;
-    case 2:
-        if ($stat && $source){
-            $file_name = $options["source"];
-            $stat_en = true;
-        }
-        else {
-            exit($ERR_MISSING_PARAM); //$#$
-        }
-        break;
-    default:
-        exit($ERR_MISSING_PARAM); //$#$
-        break;
-} //switch
-
-echo "Source:", $source, "\nStat:", $stat, "\nHelp:", $help;
-
-echo "\nOPTIONS:" , count($options);
-echo "\nFILE:", $file_name;
-echo"\nstat:", $stat_en;
-
-exit(42);
+//$ERR_ = ; //
 
 
+/***  Start  ***/
+///////// PARAMETERS /////////
 
+$param_counter = count($argv);
+//echo $param_counter;
 
-if (
-    ($param_counter == 2)
-    &&
-    ( preg_match('/^--source="?[[:word:]]*"?/', $argv[1]) == 1)
-) {
-    $file_name = explode("=", $argv[1]);
-    $file_name = $file_name[1];
+if (($param_counter == 2) && ($argv[1] == "--help")) {
+    echo "IPP project #1\n"
+        ."for more information please see the train guide or RTFM!\n";
+    exit;
+}
+elseif (($param_counter > 2) && ($argv[1] == "--help")) {
+    err_out($input_file, $ERR_MISSING_PARAM);
 }
 
 
 
-// $file_name = '/home/jakub/PhpstormProjects/2019-IPP-proj/test/a0.src';
-
-
-$input_file = fopen($file_name, 'r');
+$input_file = fopen('php://stdin', 'r');
 
 //$iin = "/home/jakub/Programming/ipp-part1/testy/input8";// . "$i";
 //$bubu = readline();
 //echo "$iin\n";
 
+//$input_file = fopen("$iin", 'r');
+
+$beg_header = 0;
+
 if ($input_file == 0) {
     err_out($input_file, $ERR_MISSING_PARAM);
 }
 
-$begin_header = 0;
+/*
+    while ((preg_match('/.IPPcode18/', $word_a[0]) == 0) && ($beg_header == 0)){
+        $line = fgets($input_file);    //echo "$line";
+        $line = preg_replace('/\s+/', " ", $line);
+        $word_a = explode(" ", $line);
+        if (feof($input_file) == 0) {
+            break;
+        }
+    }*/
+
 
 /**
  * XML output initialization
@@ -107,10 +90,21 @@ $xw = xmlwriter_open_memory(); // beg
 xmlwriter_set_indent($xw, 1);
 $res = xmlwriter_set_indent_string($xw, '');
 
-do {
 
+/**
+ * Cycle, which will take each line and transform it into an
+ * array of strings.
+ *
+ * It is using fgets |(ususal pipe) explode | Automat | generate |
+ *
+ *
+ */
+
+do {
     $line = fgets($input_file);
+
     $line = preg_replace('/\s+/', " ", $line);
+
     $word_a = explode(" ", $line);
 
     /** Removes empty strings from array */
@@ -123,13 +117,16 @@ do {
     /*
      * checks the first string (token), whether it is one of the instrictions
      */
-    if ( ( $beg_header == 0 )
+
+    if (
+        ( $beg_header == 0 )
         &&
         ( preg_match('/(DEFVAR|MOVE|CREATEFRAME|PUSHFRAME|POPFRAME|CALL|'.
                 'RETURN|PUSHS|POPS|ADD|SUB|MUL|IDIV|LT|GT|EQ|AND|OR|NOT|INT2CHAR|'.
                 'STRI2INT|READ|WRITE|CONCAT|STRLEN|SETCHAR|GETCHAR|TYPE|LABEL|JUMP|'.
                 'JUMPIFEQ|JUMPIFNEQ|DPRINT|BREAK)/',
-                $word_a[0]) == 1) )
+                $word_a[0]) == 1)
+    )
     {
         err_out($input_file, $ERR_LEX_SYNTAX);
     }
@@ -147,7 +144,6 @@ do {
         case '#':
             $comment = 1;
             break;
-
         case 'MOVE':
             // <var>
             if (preg_match('/^(LF|TF|GF)@[[:alnum:]\_\-\$\&\%\*]+/', $word_a[1])){
@@ -201,6 +197,7 @@ do {
                 err_out($input_file, $ERR_LEX_SYNTAX);
             }
             break;
+
         case 'RETURN':
             //generate
             generate_instruction_start($xw, $line_counter, $word_a[0]);
@@ -504,10 +501,38 @@ do {
         echo "<program language=\"IPPcode18\">\n";
         $f++;
     }
-
 } while (!feof($input_file)); // WHILE
 echo "</program>\n"; //closing PROGRAM tag
 
+// CLOSE FILE
+//fclose($input_file); // $#$ // NO NEED TO CLOSE STDIN
+
 /***  Fin  ***/
+
+//Bin
+
+//^(string@[[:alnum:]]+)|(string@()\\\d{3})|^string@
+
+/*
+    while ((preg_match('/.IPPcode18/', $word_a[0]) == 0) && ($beg_header == 0)){
+        $line = fgets($input_file);    //echo "$line";
+        $line = preg_replace('/\s+/', " ", $line);
+        $word_a = explode(" ", $line);
+        if (feof($input_file) == 0) {
+            break;
+        }
+    }*/
+//if ($comment == 1) {$comment = 0; continue;}
+//echo "\n$word_a[0]";
+
+//if ($beg_header == 0) {
+//    err_out($input_file, $ERR_LEX_SYNTAX);
+//}
+
+
+//echo preg_match('/^(LF|TF|GF)@[[:alnum:]\_\-\$\&\%\*]+/', $word_a[2]);
+//echo preg_match('/^((bool@)(true|false))$/', $word_a[2]);
+//echo preg_match('/^(int@(\+|\-)[[:digit:]]+)|(int@[[:digit:]]+)|int@/', $word_a[2]);
+//echo preg_match('/^(string@[[:alnum:]]+)|string@/', $word_a[2]);
 
 ?>
