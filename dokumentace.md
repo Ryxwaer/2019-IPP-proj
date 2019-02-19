@@ -1,4 +1,4 @@
-Popis
+****Popis
 jazyk: anglictina
 rozsah: každému skriptu patrí 1 strana A4
 interpret.py max 2s

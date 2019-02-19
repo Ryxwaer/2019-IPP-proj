@@ -11,19 +11,12 @@
  * Returns error value on STDERR
  * Closes input file, if it is not closed
  * and exits
- *
+ * param: $ret_val return value
  *
  */
-function err_out($input_file, $ret_val)
+function err_out($ret_val)
 {
-    //echo "\n\nERR>";
     fwrite(STDERR, $ret_val);
-    /*
-    if ($input_file != 0) {
-        fclose($input_file);
-    }*/
-    //kws();
-    //echo "\n";
     exit($ret_val);
 }
 
@@ -121,6 +114,32 @@ function generate_instruction_end($xw)
 {
     xmlwriter_end_element($xw);
 }
+
+
+function symb_regex($symb_string)
+{
+    if  (
+        (preg_match('/^(LF|TF|GF)@[[:alnum:]\_\-\$\&\%\*]+/', $symb_string)) ||
+        (preg_match('/^((bool@)(true|false))$/', $symb_string)) ||
+        (preg_match('/^(int@(\+|\-)[[:digit:]]+)|(int@[[:digit:]]+)|int@/', $symb_string)) ||
+        (preg_match('/^float@0x[[:digit:]]+.([a-f]|[[:digit:]])+p(\+|\-)[[:digit:]]+|flaot@/', $symb_string)) ||
+        (preg_match('/^(string@[[:alnum:]]+)|string@/', $symb_string)) ||
+        (preg_match('/^nil@nil/', $symb_string))
+    ) {
+        return true;
+    }
+    return false;
+}
+
+function var_regex($var_string)
+{
+    if (preg_match('/^(LF|TF|GF)@[[:alnum:]\_\-\$\&\%\*]+/', $var_string))
+    {
+        return true;
+    }
+    return false;
+}
+
 
 /* fin */
 ?>

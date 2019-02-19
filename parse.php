@@ -2,7 +2,9 @@
 include 'functions.php';
 include 'Errors.php';
 
-//$err = new Errors();
+$err = new Errors();
+
+$f = 0; // first header flag
 
 $line_counter = 1;
 $beg_header = 0; // used to determine the number of header strings ".IPPcode18"
@@ -68,34 +70,12 @@ echo "Source:", $source, "\nStat:", $stat, "\nHelp:", $help;
 echo "\nOPTIONS:" , count($options);
 echo "\nFILE:", $file_name;
 echo"\nstat:", $stat_en;
+echo "\n";
 
-exit(42);
-
-
-
-
-if (
-    ($param_counter == 2)
-    &&
-    ( preg_match('/^--source="?[[:word:]]*"?/', $argv[1]) == 1)
-) {
-    $file_name = explode("=", $argv[1]);
-    $file_name = $file_name[1];
-}
-
-
-
-// $file_name = '/home/jakub/PhpstormProjects/2019-IPP-proj/test/a0.src';
-
-
-$input_file = fopen($file_name, 'r');
-
-//$iin = "/home/jakub/Programming/ipp-part1/testy/input8";// . "$i";
-//$bubu = readline();
-//echo "$iin\n";
+$input_file = fopen($file_name, 'r') or die("Couldn't open the file");
 
 if ($input_file == 0) {
-    err_out($input_file, $ERR_MISSING_PARAM);
+    err_out($ERR_MISSING_PARAM);
 }
 
 $begin_header = 0;
@@ -131,8 +111,9 @@ do {
                 'JUMPIFEQ|JUMPIFNEQ|DPRINT|BREAK)/',
                 $word_a[0]) == 1) )
     {
-        err_out($input_file, $ERR_LEX_SYNTAX);
+        err_out($ERR_LEX_SYNTAX);
     }
+
 
     /**
      * the SWITCH
@@ -150,20 +131,16 @@ do {
 
         case 'MOVE':
             // <var>
-            if (preg_match('/^(LF|TF|GF)@[[:alnum:]\_\-\$\&\%\*]+/', $word_a[1])){
+            if (var_regex($word_a[1])){
                 //echo "$word_a[1]";
             }
             else{
-                err_out($input_file, $ERR_LEX_SYNTAX);
+                err_out($ERR_LEX_SYNTAX);
             }
 
             // <symb>
-            if (
-                (preg_match('/^(LF|TF|GF)@[[:alnum:]\_\-\$\&\%\*]+/', $word_a[2])) ||
-                (preg_match('/^((bool@)(true|false))$/', $word_a[2])) ||
-                (preg_match('/^(int@(\+|\-)[[:digit:]]+)|(int@[[:digit:]]+)|int@/', $word_a[2])) ||
-                (preg_match('/^(string@[[:alnum:]]+)|string@/', $word_a[2]))
-            ) {
+            if (symb_regex($word_a[2]))
+            {
                 //generate
                 generate_instruction_start($xw, $line_counter, $word_a[0]);
                 generate_arg($xw, "var", "arg1", $word_a[1]);
@@ -171,20 +148,20 @@ do {
                 generate_instruction_end($xw);
             }
             else{
-                err_out($input_file, $ERR_LEX_SYNTAX);
+                err_out($ERR_LEX_SYNTAX);
             }
             break;
 
         case 'DEFVAR':
             // <var>
-            if (preg_match('/^(LF|TF|GF)@[[:alnum:]\_\-\$\&\%\*]+/', $word_a[1])){
+            if (var_regex($word_a[1])){
                 //generate
                 generate_instruction_start($xw, $line_counter, $word_a[0]);
                 generate_arg($xw, "var", "arg1", $word_a[1]);
                 generate_instruction_end($xw);
             }
             else{
-                err_out($input_file, $ERR_LEX_SYNTAX);
+                err_out($ERR_LEX_SYNTAX);
             }
             break;
 
@@ -198,7 +175,7 @@ do {
                 //echo "\n$word_a[0]\n" . "$word_a[1]\n";
             }
             else{
-                err_out($input_file, $ERR_LEX_SYNTAX);
+                err_out($ERR_LEX_SYNTAX);
             }
             break;
         case 'RETURN':
@@ -209,32 +186,28 @@ do {
 
         case 'PUSHS':
             // <symb>
-            if (
-                (preg_match('/^(LF|TF|GF)@[[:alnum:]\_\-\$\&\%\*]+/', $word_a[1])) ||
-                (preg_match('/^((bool@)(true|false))$/', $word_a[1])) ||
-                (preg_match('/^(int@(\+|\-)[[:digit:]]+)|(int@[[:digit:]]+)|int@/', $word_a[1])) ||
-                (preg_match('/^(string@[[:alnum:]]+)|string@/', $word_a[1]))
-            ) {
+            if (symb_regex($word_a[1]))
+            {
                 //generate
                 generate_instruction_start($xw, $line_counter, $word_a[0]);
                 generate_symb($xw, 1, $word_a);
                 generate_instruction_end($xw);
             }
             else{
-                err_out($input_file, $ERR_LEX_SYNTAX);
+                err_out($ERR_LEX_SYNTAX);
             }
             break;
 
         case 'POPS':
             // <var>
-            if (preg_match('/^(LF|TF|GF)@[[:alnum:]\_\-\$\&\%\*]+/', $word_a[1])){
+            if (var_regex($word_a[1])){
                 //generate
                 generate_instruction_start($xw, $line_counter, $word_a[0]);
                 generate_arg($xw, "var", "arg1", $word_a[1]);
                 generate_instruction_end($xw);
             }
             else {
-                err_out($input_file, $ERR_LEX_SYNTAX);
+                err_out($ERR_LEX_SYNTAX);
             }
             break;
 
@@ -254,25 +227,16 @@ do {
         case 'SETCHAR'://$#$
         case 'CONCAT'://$#$
             //var
-            if (preg_match('/^(LF|TF|GF)@[[:alnum:]\_\-\$\&\%\*]+/', $word_a[1])){}
-            else { err_out($input_file, $ERR_LEX_SYNTAX); }
+            if (var_regex($word_a[1])) {}
+            else { err_out($ERR_LEX_SYNTAX); }
 
             // <symb>
-            if (
-                (preg_match('/^(LF|TF|GF)@[[:alnum:]\_\-\$\&\%\*]+/', $word_a[2])) ||
-                (preg_match('/^((bool@)(true|false))$/', $word_a[2])) ||
-                (preg_match('/^(int@(\+|\-)[[:digit:]]+)|(int@[[:digit:]]+)|int@/', $word_a[2])) ||
-                (preg_match('/^(string@[[:alnum:]]+)|string@/', $word_a[2]))
-            ) {}
-            else{ err_out($input_file, $ERR_LEX_SYNTAX); }
+            if (symb_regex($word_a[2])){}
+            else{ err_out($ERR_LEX_SYNTAX); }
 
             // <symb>
-            if (
-                (preg_match('/^(LF|TF|GF)@[[:alnum:]\_\-\$\&\%\*]+/', $word_a[3])) ||
-                (preg_match('/^((bool@)(true|false))$/', $word_a[3])) ||
-                (preg_match('/^(int@(\+|\-)[[:digit:]]+)|(int@[[:digit:]]+)|int@/', $word_a[3])) ||
-                (preg_match('/^(string@[[:alnum:]]+)|string@/', $word_a[3]))
-            ) {
+            if (symb_regex($word_a[3]))
+            {
                 //generate
                 generate_instruction_start($xw, $line_counter, $word_a[0]);
                 generate_arg($xw, "var", "arg1", $word_a[1]);
@@ -280,52 +244,38 @@ do {
                 generate_symb($xw, 3, $word_a);
                 generate_instruction_end($xw);
             }
-            else{ err_out($input_file, $ERR_LEX_SYNTAX); }
+            else{ err_out($ERR_LEX_SYNTAX); }
             break;
 
         case 'NOT':
         case 'STRLEN'://$#$
         case 'INT2CHAR':
             // <var>
-            if (preg_match('/^(LF|TF|GF)@[[:alnum:]\_\-\$\&\%\*]+/', $word_a[1])){}
-            else { err_out($input_file, $ERR_LEX_SYNTAX); }
+            if (var_regex($word_a[1])){}
+            else { err_out($ERR_LEX_SYNTAX); }
 
             // <symb>
-            if (
-                (preg_match('/^(LF|TF|GF)@[[:alnum:]\_\-\$\&\%\*]+/', $word_a[2])) ||
-                (preg_match('/^((bool@)(true|false))$/', $word_a[2])) ||
-                (preg_match('/^(int@(\+|\-)[[:digit:]]+)|(int@[[:digit:]]+)|int@/', $word_a[2])) ||
-                (preg_match('/^(string@[[:alnum:]]+)|string@/', $word_a[2]))
-            ) {
+            if (symb_regex($word_a[2]))
+            {
                 generate_instruction_start($xw, $line_counter, $word_a[0]);
                 generate_arg($xw, "var", "arg1", $word_a[1]);
                 generate_symb($xw, 2, $word_a);
                 generate_instruction_end($xw);
             }
-            else{ err_out($input_file, $ERR_LEX_SYNTAX); }
+            else{ err_out($ERR_LEX_SYNTAX); }
             break;
-
         case 'STRI2INT':
             //<var>
-            if (preg_match('/^(LF|TF|GF)@[[:alnum:]\_\-\$\&\%\*]+/', $word_a[1])){}
-            else { err_out($input_file, $ERR_LEX_SYNTAX); }
+            if (var_regex($word_a[1])) {}
+            else { err_out($ERR_LEX_SYNTAX); }
 
             //<symb>
-            if (
-                (preg_match('/^(LF|TF|GF)@[[:alnum:]\_\-\$\&\%\*]+/', $word_a[2])) ||
-                (preg_match('/^((bool@)(true|false))$/', $word_a[2])) ||
-                (preg_match('/^(int@(\+|\-)[[:digit:]]+)|(int@[[:digit:]]+)|int@/', $word_a[2])) ||
-                (preg_match('/^(string@[[:alnum:]]+)|string@/', $word_a[2]))
-            ) {}
-            else { err_out($input_file, $ERR_LEX_SYNTAX); }
+            if (symb_regex($word_a[2])) {}
+            else { err_out($ERR_LEX_SYNTAX); }
 
             //<symb>
-            if (
-                (preg_match('/^(LF|TF|GF)@[[:alnum:]\_\-\$\&\%\*]+/', $word_a[3])) ||
-                (preg_match('/^((bool@)(true|false))$/', $word_a[3])) ||
-                (preg_match('/^(int@(\+|\-)[[:digit:]]+)|(int@[[:digit:]]+)|int@/', $word_a[3])) ||
-                (preg_match('/^(string@[[:alnum:]]+)|string@/', $word_a[3]))
-            ) {
+            if (symb_regex($word_a[3]))
+            {
                 //generate
                 generate_instruction_start($xw, $line_counter, $word_a[0]);
                 generate_arg($xw, "var", "arg1", $word_a[1]);
@@ -333,28 +283,25 @@ do {
                 generate_symb($xw, 3, $word_a);
                 generate_instruction_end($xw);
             }
-            else { err_out($input_file, $ERR_LEX_SYNTAX); }
+            else { err_out($ERR_LEX_SYNTAX); }
             break;
-
+        case 'INT2FLOAT':
+        case 'FLOAT2INT':
         case 'TYPE':
             // <var>
-            if (preg_match('/^(LF|TF|GF)@[[:alnum:]\_\-\$\&\%\*]+/', $word_a[1])){}
-            else { err_out($input_file, $ERR_LEX_SYNTAX); }
+            if (var_regex($word_a[1])){}
+            else { err_out($ERR_LEX_SYNTAX); }
 
             // <symb>
-            if (
-                (preg_match('/^(LF|TF|GF)@[[:alnum:]\_\-\$\&\%\*]+/', $word_a[2])) ||
-                (preg_match('/^((bool@)(true|false))$/', $word_a[2])) ||
-                (preg_match('/^(int@(\+|\-)[[:digit:]]+)|(int@[[:digit:]]+)|int@/', $word_a[2])) ||
-                (preg_match('/^(string@[[:alnum:]]+)|string@/', $word_a[2]))
-            ) {
+            if (symb_regex($word_a[2]))
+            {
                 //generate
                 generate_instruction_start($xw, $line_counter, $word_a[0]);
                 generate_arg($xw, "var", "arg1", $word_a[1]);
                 generate_symb($xw, 2, $word_a);
                 generate_instruction_end($xw);
             }
-            else { err_out($input_file, $ERR_LEX_SYNTAX); }
+            else { err_out($ERR_LEX_SYNTAX); }
             break;
 
         case 'LABEL':
@@ -366,31 +313,22 @@ do {
                 generate_arg($xw, "label", "arg1", $word_a[1]);
                 generate_instruction_end($xw);
             }
-            else { err_out($input_file, $ERR_LEX_SYNTAX); }
+            else { err_out($ERR_LEX_SYNTAX); }
             break;
 
         case 'JUMPIFEQ':
         case 'JUMPIFNEQ':
             // label
             if (preg_match('/\S+/', $word_a[1])){}
-            else { err_out($input_file, $ERR_LEX_SYNTAX); }
+            else { err_out($ERR_LEX_SYNTAX); }
             // symb
-            if (
-                (preg_match('/^(LF|TF|GF)@[[:alnum:]\_\-\$\&\%\*]+/', $word_a[2])) ||
-                (preg_match('/^((bool@)(true|false))$/', $word_a[2])) ||
-                (preg_match('/^(int@(\+|\-)[[:digit:]]+)|(int@[[:digit:]]+)|int@/', $word_a[2])) ||
-                (preg_match('/^(string@[[:alnum:]]+)|string@/', $word_a[2]))
-            ) {}
+            if (symb_regex($word_a[2])){}
             //generate
-            else { err_out($input_file, $ERR_LEX_SYNTAX); }
+            else { err_out($ERR_LEX_SYNTAX); }
 
             //symb
-            if (
-                (preg_match('/^(LF|TF|GF)@[[:alnum:]\_\-\$\&\%\*]+/', $word_a[3])) ||
-                (preg_match('/^((bool@)(true|false))$/', $word_a[3])) ||
-                (preg_match('/^(int@(\+|\-)[[:digit:]]+)|(int@[[:digit:]]+)|int@/', $word_a[3])) ||
-                (preg_match('/^(string@[[:alnum:]]+)|string@/', $word_a[3]))
-            ) {
+            if (symb_regex($word_a[3]))
+            {
                 //generate
                 generate_instruction_start($xw, $line_counter, $word_a[0]);
                 generate_arg($xw, "label", "arg1", $word_a[1]);
@@ -398,53 +336,45 @@ do {
                 generate_symb($xw, 3, $word_a);
                 generate_instruction_end($xw);
             }
-            else { err_out($input_file, $ERR_LEX_SYNTAX); }
+            else { err_out($ERR_LEX_SYNTAX); }
             break;
 
         case 'READ':  // <var> <type>
-            if (preg_match('/^(LF|TF|GF)@[[:alnum:]\_\-\$\&\%\*]+/', $word_a[1])){}
-            else { err_out($input_file, $ERR_LEX_SYNTAX); }
+            if (var_regex($word_a[1])) {}
+            else { err_out($ERR_LEX_SYNTAX); }
 
-            if (preg_match('/int|string|bool/', $word_a[2])) {
+            if (preg_match('/int|float|string|bool/', $word_a[2])) {
                 //generate
                 generate_instruction_start($xw, $line_counter, $word_a[0]);
                 generate_arg($xw, "var", "arg1", $word_a[1]);
                 generate_arg($xw, "type", "arg2", $word_a[2]);
                 generate_instruction_end($xw);
             }
-            else { err_out($input_file, $ERR_LEX_SYNTAX); }
+            else { err_out($ERR_LEX_SYNTAX); }
             break;
 
         case 'WRITE':  // <symb>
-            if (
-                (preg_match('/^(LF|TF|GF)@[[:alnum:]\_\-\$\&\%\*]+/', $word_a[1])) ||
-                (preg_match('/^((bool@)(true|false))$/', $word_a[1])) ||
-                (preg_match('/^(int@(\+|\-)[[:digit:]]+)|(int@[[:digit:]]+)|int@/', $word_a[1])) ||
-                (preg_match('/^(string@[[:alnum:]]+)|string@/', $word_a[1]))
-            ) {
+            if (symb_regex($word_a[1]))
+            {
                 //generate
                 generate_instruction_start($xw, $line_counter, $word_a[0]);
                 generate_symb($xw, 1, $word_a);
                 generate_instruction_end($xw);
             }
-            else { err_out($input_file, $ERR_LEX_SYNTAX); }
+            else { err_out($ERR_LEX_SYNTAX); }
             break;
-
+        case 'EXIT':
         case 'DPRINT':
             // <symb>
-            if (
-                (preg_match('/^(LF|TF|GF)@[[:alnum:]\_\-\$\&\%\*]+/', $word_a[1])) ||
-                (preg_match('/^((bool@)(true|false))$/', $word_a[1])) ||
-                (preg_match('/^(int@(\+|\-)[[:digit:]]+)|(int@[[:digit:]]+)|int@/', $word_a[1])) ||
-                (preg_match('/^(string@[[:alnum:]]+)|string@/', $word_a[1]))
-            ) {
+            if (symb_regex($word_a[1]))
+            {
                 //generate
                 generate_instruction_start($xw, $line_counter, $word_a[0]);
                 generate_symb($xw, 1, $word_a);
                 generate_instruction_end($xw);
             }
             else{
-                err_out($input_file, $ERR_LEX_SYNTAX);
+                err_out($ERR_LEX_SYNTAX);
             }
             break;
 
@@ -471,23 +401,32 @@ do {
             generate_instruction_end($xw);
             break;
 
+        case '.IPPcode19':
+            $beg_header++;
+            if ($beg_header !== 1) {
+                err_out($ERR_LEX_SYNTAX);
+            }
+            xmlwriter_start_document($xw, '1.0', 'UTF-8');
+            break;
+
         default:
+
             // #immediate comment after hashtag
             if (preg_match('/#.*/', $word_a[0])) {
                 $comment = 1;
             }
             // Header
-            elseif (preg_match('/.IPPcode18/', $word_a[0]) == 1) {
+            /*elseif (preg_match('/.IPPcode19/', $word_a[0]) == 1) {
                 $beg_header++;
                 if ($beg_header !== 1) {
-                    err_out($input_file, $ERR_LEX_SYNTAX);
+                    err_out($ERR_LEX_SYNTAX);
                 }
                 xmlwriter_start_document($xw, '1.0', 'UTF-8');
-            }
+            }*/
             elseif (preg_match('/\s+/', $line) == 1) {}
             else {
                 if (!feof($input_file)) {
-                    err_out($input_file, $ERR_LEX_SYNTAX);
+                    err_out($ERR_LEX_SYNTAX);
                 }
             }
             break;

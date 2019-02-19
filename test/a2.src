@@ -93,6 +93,15 @@ READ LF@%retval float
 POPFRAME
 RETURN
 LABEL inputf$end
-DEFVAR LF@mm
+
+DEFVAR LF@a
 MOVE GF@%tmp1 int@5
-MOVE LF@mm GF@%tmp1
+MOVE LF@a GF@%tmp1
+DEFVAR LF@b
+MOVE GF@%tmp1 int@6
+MOVE LF@b GF@%tmp1
+DEFVAR LF@z
+ADD GF@%tmp1 LF@a LF@b
+MOVE LF@z GF@%tmp1
+WRITE LF@z
+MOVE LF@%retval nil@nil
