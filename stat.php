@@ -25,10 +25,10 @@ class Statistics
         $this->_labels = 0;
         $this->_jumps = 0;
 
-        $this->loc_en = false;
-        $this->comments_en = false;
-        $this->labels_en = false;
-        $this->jumps_en = false;
+        $this->loc_en = NULL;
+        $this->comments_en = NULL;
+        $this->labels_en = NULL;
+        $this->jumps_en = NULL;
     }
     /** *** GETS *** */
     /**

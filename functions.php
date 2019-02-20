@@ -122,7 +122,7 @@ function symb_regex($symb_string)
         (preg_match('/^(LF|TF|GF)@[[:alnum:]\_\-\$\&\%\*]+/', $symb_string)) ||
         (preg_match('/^((bool@)(true|false))$/', $symb_string)) ||
         (preg_match('/^(int@(\+|\-)[[:digit:]]+)|(int@[[:digit:]]+)|int@/', $symb_string)) ||
-        (preg_match('/^float@0x[[:digit:]]+.([a-f]|[[:digit:]])+p(\+|\-)[[:digit:]]+|flaot@/', $symb_string)) ||
+        (preg_match('/^float@0x[[:digit:]]+\.([a-f]|[[:digit:]])+p(\+|\-)[[:digit:]]+|flaot@/', $symb_string)) ||
         (preg_match('/^(string@[[:alnum:]]+)|string@/', $symb_string)) ||
         (preg_match('/^nil@nil/', $symb_string))
     ) {

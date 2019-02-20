@@ -2,7 +2,6 @@
 include 'functions.php';
 include 'Errors.php';
 include 'stat.php';
-
 include "debug.php";
 
 $err = new Errors();
@@ -14,35 +13,39 @@ $beg_header = 0; // used to determine the number of header strings ".IPPcode18"
 $param_counter = count($argv);
 
 /***  Error numbers  ***/
-$ERR_MISSING_PARAM = 10; // parameter is missing
-$ERR_INPUT_FILE  = 11;   // error loading input file
+$ERR_MISSING_PARAM = 10; // parameter is missing $ERR_INPUT_FILE  = 11;   // error loading input file
 $ERR_OUTPUT_FILE = 12;   // error loading output file
 $ERR_FATAL_ERROR = 99;   // sth went horribly wrong
 $ERR_LEX_SYNTAX  = 21;   // lexical or syntax error
 
+/*** Used Filenames ***/
+$file_name = 'php://stdin';
+$stats_file_name = '';
+
+/***
+ * Parameters processing
+ */
+
 $longopts  = array(
     "source::",    // Optional value
-    "stat::",        // Optional value
-    "help",           // No value
+    "stats::",     // Optional value
+    "help",        // No value
     "loc",
     "comments",
     "labels",
-    "jumps",
+    "jumps"
 );
 $options = getopt("", $longopts);
 
 $help = array_key_exists("help", $options);
-$stat = array_key_exists("stat", $options);
+$stats = array_key_exists("stats", $options);
 $stat_en = false;
-
 $source = array_key_exists("source", $options);
 
-$file_name = 'php://stdin';
-$stat_file_name = '';
 
-$stat_obj = new Statistics();
+$stats_obj = new Statistics();
 
-$stat_obj->setEnable($options);
+$stats_obj->setEnable($options);
 
 if (count($options) == 0) {
     $file_name = 'php://stdin';
@@ -51,30 +54,29 @@ else {
     if ($source) {
         $file_name = $options["source"];
     }
-    if ($stat) {
-        $stat_en = true;
-        $stat_file_name = $options["stat"];
+    if ($stats) {
+        $stats_en = true;
+        $stats_file_name = $options["stats"];
     }
 }
 
-if ( ! $stat &&
-    (   $stat_obj->isCommentsEn() ||
-        $stat_obj->isJumpsEn() ||
-        $stat_obj->isLocEn() ||
-        $stat_obj->isLabelsEn()
+if ( ! $stats &&
+    (   $stats_obj->isCommentsEn() ||
+        $stats_obj->isJumpsEn() ||
+        $stats_obj->isLocEn() ||
+        $stats_obj->isLabelsEn()
     )
 ){
     exit($err->getMissingParameter());
 }
 
-
 if ($help &&
-        ($stat ||
+        ($stats ||
         $source ||
-        $stat_obj->isCommentsEn() ||
-        $stat_obj->isJumpsEn() ||
-        $stat_obj->isLocEn() ||
-        $stat_obj->isLabelsEn()
+        $stats_obj->isCommentsEn() ||
+        $stats_obj->isJumpsEn() ||
+        $stats_obj->isLocEn() ||
+        $stats_obj->isLabelsEn()
     )
 ){
     exit($err->getMissingParameter());
@@ -84,31 +86,27 @@ elseif ($help) {
         ."for more information please see the train guide or RTFM!\n";
 }
 
+/*** DEBUG  ***/
 if ($debug){
     var_dump($options);
-    echo "Source:", $source, "\nStat:", $stat, "\nHelp:", $help;
+    echo "Source:", $source, "\nStat:", $stats, "\nHelp:", $help;
 
     echo "\nOPTIONS:" , count($options);
     echo "\nFILE:", $file_name;
     echo"\nstat:", $stat_en;
-    echo "\nSTAT>", $stat_file_name;
+    echo "\nSTAT>", $stats_file_name;
 
-    echo "\nComments ", $stat_obj->getComments();
-    $stat_obj->inc_comments();
-    echo "\nComments after ---------- ", $stat_obj->getComments();
-    echo "\nJumps ", $stat_obj->getJumps();
-    echo "\nLabels ", $stat_obj->getLabels();
-    echo "\nLoc ", $stat_obj->getLoc();
+    echo "\nComments ", $stats_obj->getComments();
+    $stats_obj->inc_comments();
+    echo "\nComments after ---------- ", $stats_obj->getComments();
+    echo "\nJumps ", $stats_obj->getJumps();
+    echo "\nLabels ", $stats_obj->getLabels();
+    echo "\nLoc ", $stats_obj->getLoc();
 
     echo "\n";
-if ($stat_obj->isCommentsEn(
-
-)){
-    echo "CPMMENTS ENABLED";
-}
-
-    exit(0);
-
+    if ($stats_obj->isCommentsEn()){
+        echo "CPMMENTS ENABLED";
+    }
 }
 
 $input_file = fopen($file_name, 'r') or die("Couldn't open the file");
@@ -117,12 +115,12 @@ if ($input_file == 0) {
     err_out($ERR_MISSING_PARAM);
 }
 
-if ($stat_en && $stat_file_name !== '')
+if ($stats_en && $stats_file_name !== '')
 {
-    $stat_file = fopen($stat_file_name, 'r');
-    if ($stat_file == 0)
+    $stats_file = fopen($stats_file_name, 'w');
+    if ($stats_file == 0)
     {
-        err_out($ERR_MISSING_PARAM);
+        err_out($err->getCouldnotOpenOUTfile());
     }
 }
 
@@ -486,6 +484,19 @@ do {
 
 } while (!feof($input_file)); // WHILE
 echo "</program>\n"; //closing PROGRAM tag
+
+
+$stats_obj->getComments();
+$stats_obj->getJumps();
+$stats_obj->getLabels();
+$stats_obj->getLoc();
+
+$string_to_write_stats = '';
+$string_to_write_stats = $string_to_write_stats . $stats_obj->getComments() . "\n" . $stats_obj->getJumps() . "\n" . $stats_obj->getLabels() . "\n" . $stats_obj->getLoc();
+
+fwrite($stats_file, $string_to_write_stats);
+fclose($stats_file);
+exit(0);
 
 /***  Fin  ***/
 

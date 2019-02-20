@@ -88,20 +88,24 @@ JUMP inputf$end
 LABEL inputf
 PUSHFRAME
 DEFVAR LF@%retval
-MOVE LF@%retval float@0x0p+0
+MOVE LF@%retval float@0x0.0p+0
 READ LF@%retval float
 POPFRAME
 RETURN
 LABEL inputf$end
-
 DEFVAR LF@a
-MOVE GF@%tmp1 int@5
+MOVE GF@%tmp1 int@6
 MOVE LF@a GF@%tmp1
 DEFVAR LF@b
-MOVE GF@%tmp1 int@6
+MOVE GF@%tmp1 int@7
 MOVE LF@b GF@%tmp1
-DEFVAR LF@z
-ADD GF@%tmp1 LF@a LF@b
-MOVE LF@z GF@%tmp1
-WRITE LF@z
 MOVE LF@%retval nil@nil
+LABEL lab$do$0
+LT GF@%tmp1 LF@a LF@b
+JUMPIFNEQ lab$do$1 GF@%tmp1 bool@true
+ADD GF@%tmp1 LF@a int@1
+MOVE LF@a GF@%tmp1
+WRITE LF@a
+MOVE LF@%retval nil@nil
+JUMP lab$do$0
+LABEL lab$do$1
