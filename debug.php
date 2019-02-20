@@ -3,5 +3,5 @@
  * Sets debugging option
  */
 
-$debug = true;
+$debug = false;
 ?>
