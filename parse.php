@@ -1,6 +1,9 @@
 <?php
 include 'functions.php';
 include 'Errors.php';
+include 'stat.php';
+
+include "debug.php";
 
 $err = new Errors();
 
@@ -19,63 +22,108 @@ $ERR_LEX_SYNTAX  = 21;   // lexical or syntax error
 
 $longopts  = array(
     "source::",    // Optional value
-    "stat",        // No value
+    "stat::",        // Optional value
     "help",           // No value
+    "loc",
+    "comments",
+    "labels",
+    "jumps",
 );
 $options = getopt("", $longopts);
-var_dump($options);
 
 $help = array_key_exists("help", $options);
 $stat = array_key_exists("stat", $options);
 $stat_en = false;
+
 $source = array_key_exists("source", $options);
 
-switch (count($options)) {
-    case 0:
-        $file_name = 'php://stdin';
-        break;
-    case 1:
-        if ($help){
-            echo "IPP project #1\n"
-                ."for more information please see the train guide or RTFM!\n";
-            return;
-        }
-        elseif ($source){
-            $file_name = $options["source"];
-        }
-        elseif ($stat){
-            $file_name = 'php://stdin';
-            $stat_en = true;
-        }
-        else{
-            exit($ERR_MISSING_PARAM); //$#$
-        }
-        break;
-    case 2:
-        if ($stat && $source){
-            $file_name = $options["source"];
-            $stat_en = true;
-        }
-        else {
-            exit($ERR_MISSING_PARAM); //$#$
-        }
-        break;
-    default:
-        exit($ERR_MISSING_PARAM); //$#$
-        break;
-} //switch
+$file_name = 'php://stdin';
+$stat_file_name = '';
 
-echo "Source:", $source, "\nStat:", $stat, "\nHelp:", $help;
+$stat_obj = new Statistics();
 
-echo "\nOPTIONS:" , count($options);
-echo "\nFILE:", $file_name;
-echo"\nstat:", $stat_en;
-echo "\n";
+$stat_obj->setEnable($options);
+
+if (count($options) == 0) {
+    $file_name = 'php://stdin';
+}
+else {
+    if ($source) {
+        $file_name = $options["source"];
+    }
+    if ($stat) {
+        $stat_en = true;
+        $stat_file_name = $options["stat"];
+    }
+}
+
+if ( ! $stat &&
+    (   $stat_obj->isCommentsEn() ||
+        $stat_obj->isJumpsEn() ||
+        $stat_obj->isLocEn() ||
+        $stat_obj->isLabelsEn()
+    )
+){
+    exit($err->getMissingParameter());
+}
+
+
+if ($help &&
+        ($stat ||
+        $source ||
+        $stat_obj->isCommentsEn() ||
+        $stat_obj->isJumpsEn() ||
+        $stat_obj->isLocEn() ||
+        $stat_obj->isLabelsEn()
+    )
+){
+    exit($err->getMissingParameter());
+}
+elseif ($help) {
+    echo "IPP project #1\n"
+        ."for more information please see the train guide or RTFM!\n";
+}
+
+if ($debug){
+    var_dump($options);
+    echo "Source:", $source, "\nStat:", $stat, "\nHelp:", $help;
+
+    echo "\nOPTIONS:" , count($options);
+    echo "\nFILE:", $file_name;
+    echo"\nstat:", $stat_en;
+    echo "\nSTAT>", $stat_file_name;
+
+    echo "\nComments ", $stat_obj->getComments();
+    $stat_obj->inc_comments();
+    echo "\nComments after ---------- ", $stat_obj->getComments();
+    echo "\nJumps ", $stat_obj->getJumps();
+    echo "\nLabels ", $stat_obj->getLabels();
+    echo "\nLoc ", $stat_obj->getLoc();
+
+    echo "\n";
+if ($stat_obj->isCommentsEn(
+
+)){
+    echo "CPMMENTS ENABLED";
+}
+
+    exit(0);
+
+}
 
 $input_file = fopen($file_name, 'r') or die("Couldn't open the file");
 
 if ($input_file == 0) {
     err_out($ERR_MISSING_PARAM);
+}
+
+if ($stat_en && $stat_file_name !== '')
+{
+    $stat_file = fopen($stat_file_name, 'r');
+    if ($stat_file == 0)
+    {
+        err_out($ERR_MISSING_PARAM);
+    }
 }
 
 $begin_header = 0;
@@ -415,14 +463,6 @@ do {
             if (preg_match('/#.*/', $word_a[0])) {
                 $comment = 1;
             }
-            // Header
-            /*elseif (preg_match('/.IPPcode19/', $word_a[0]) == 1) {
-                $beg_header++;
-                if ($beg_header !== 1) {
-                    err_out($ERR_LEX_SYNTAX);
-                }
-                xmlwriter_start_document($xw, '1.0', 'UTF-8');
-            }*/
             elseif (preg_match('/\s+/', $line) == 1) {}
             else {
                 if (!feof($input_file)) {
