@@ -112,7 +112,8 @@ TF
 
 
 
-
+Zdroje
+https://ruslanspivak.com/lsbasi-part5/
 
 
 
