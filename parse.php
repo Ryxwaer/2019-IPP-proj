@@ -159,7 +159,7 @@ do {
         ( preg_match('/('. $instruction_list_string_preg .')/',
             strtoupper($word_a[0])) == 1) ) //obhajoba
     {
-        err_out($ERR_LEX_SYNTAX);
+        err_out($err->getMissingHeaderErr());
     }
 
 
@@ -440,7 +440,7 @@ do {
             if (preg_match('/#.*/', $word_a[0])) {
                 $comment = 1;
             }
-            //elseif ($beg_header == 0)
+            elseif ($word_a[0] == ""){}
             elseif (preg_match('/.IPPCODE19/', strtoupper($word_a[0])) == 1) {
                 $beg_header++;
                 if ($beg_header !== 1) {
@@ -448,11 +448,14 @@ do {
                 }
                 xmlwriter_start_document($xw, '1.0', 'UTF-8');
             }
-            elseif (preg_match('/\s+/', $line) == 1) {}
-            elseif (preg_match('/('. $instruction_list_string_preg .')/', strtoupper($word_a[0])) == 0) {
+            elseif (preg_match('/('. $instruction_list_string_preg .')/', strtoupper($word_a[0])) === 0) {
                 // jedna sa o chybu zleho tvaru instrukcie
                 exit($err->getOpcodeErr());
             }
+            elseif ($beg_header == 0 && (preg_match('/('. $instruction_list_string_preg .')/', strtoupper($word_a[0])) === 1)){
+                exit($err->getMissingHeaderErr());
+            }
+            elseif (preg_match('/\s+/', $line) == 1) {}
             else {
                 if (!feof($input_file)) {
                     err_out($ERR_LEX_SYNTAX);
