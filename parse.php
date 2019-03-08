@@ -9,14 +9,14 @@ $err = new Errors();
 $f = 0; // first header flag
 
 $line_counter = 1;
-$beg_header = 0; // used to determine the number of header strings ".IPPcode18"
+$beg_header = 0; // used to determine the number of header strings ".IPPcode19"
 $param_counter = count($argv);
 
 /***  Error numbers  ***/
 $ERR_MISSING_PARAM = 10; // parameter is missing $ERR_INPUT_FILE  = 11;   // error loading input file
 $ERR_OUTPUT_FILE = 12;   // error loading output file
 $ERR_FATAL_ERROR = 99;   // sth went horribly wrong
-$ERR_LEX_SYNTAX  = 21;   // lexical or syntax error
+$ERR_LEX_SYNTAX  = 23;   // lexical or syntax error
 
 /*** Used Filenames ***/
 $file_name = 'php://stdin';
@@ -39,9 +39,9 @@ $options = getopt("", $longopts);
 
 $help = array_key_exists("help", $options);
 $stats = array_key_exists("stats", $options);
-$stat_en = false;
+$stats_en = false;
 $source = array_key_exists("source", $options);
-
+$not_processed_instructions = 0; // helps determine Instructioons that were not processed
 
 $stats_obj = new Statistics();
 
@@ -93,7 +93,7 @@ if ($debug){
 
     echo "\nOPTIONS:" , count($options);
     echo "\nFILE:", $file_name;
-    echo"\nstat:", $stat_en;
+    echo"\nstat:", $stats_en;
     echo "\nSTAT>", $stats_file_name;
 
     echo "\nComments ", $stats_obj->getComments();
@@ -146,16 +146,18 @@ do {
         }
     }
 
+    $instruction_list_string_preg = 'DEFVAR|MOVE|CREATEFRAME|PUSHFRAME|POPFRAME|CALL|'.
+        'RETURN|PUSHS|POPS|ADD|SUB|MUL|IDIV|LT|GT|EQ|AND|OR|NOT|INT2CHAR|'.
+        'STRI2INT|READ|WRITE|CONCAT|STRLEN|SETCHAR|GETCHAR|TYPE|LABEL|JUMP|'.
+        'JUMPIFEQ|JUMPIFNEQ|DPRINT|BREAK|EXIT'; //FLOAT2INT
+
     /*
      * checks the first string (token), whether it is one of the instrictions
      */
     if ( ( $beg_header == 0 )
         &&
-        ( preg_match('/(DEFVAR|MOVE|CREATEFRAME|PUSHFRAME|POPFRAME|CALL|'.
-                'RETURN|PUSHS|POPS|ADD|SUB|MUL|IDIV|LT|GT|EQ|AND|OR|NOT|INT2CHAR|'.
-                'STRI2INT|READ|WRITE|CONCAT|STRLEN|SETCHAR|GETCHAR|TYPE|LABEL|JUMP|'.
-                'JUMPIFEQ|JUMPIFNEQ|DPRINT|BREAK)/',
-                $word_a[0]) == 1) )
+        ( preg_match('/('. $instruction_list_string_preg .')/',
+            strtoupper($word_a[0])) == 1) ) //obhajoba
     {
         err_out($ERR_LEX_SYNTAX);
     }
@@ -170,7 +172,7 @@ do {
      * Returns non 0 value if something is not right
      *
      */
-    switch ($word_a[0]) {
+    switch (strtoupper($word_a[0])) {
         case '#':
             $comment = 1;
             break;
@@ -188,7 +190,7 @@ do {
             if (symb_regex($word_a[2]))
             {
                 //generate
-                generate_instruction_start($xw, $line_counter, $word_a[0]);
+                generate_instruction_start($xw, $line_counter, strtoupper($word_a[0]));
                 generate_arg($xw, "var", "arg1", $word_a[1]);
                 generate_symb($xw, 2, $word_a);
                 generate_instruction_end($xw);
@@ -202,7 +204,7 @@ do {
             // <var>
             if (var_regex($word_a[1])){
                 //generate
-                generate_instruction_start($xw, $line_counter, $word_a[0]);
+                generate_instruction_start($xw, $line_counter, strtoupper($word_a[0]));
                 generate_arg($xw, "var", "arg1", $word_a[1]);
                 generate_instruction_end($xw);
             }
@@ -215,7 +217,7 @@ do {
             // <label>
             if (preg_match('/[(a-zA-Z0-9)|(\_\-\$\&\%\*)]+/', $word_a[1])){
                 //generate
-                generate_instruction_start($xw, $line_counter, $word_a[0]);
+                generate_instruction_start($xw, $line_counter, strtoupper($word_a[0]));
                 generate_arg($xw, "label", "arg1", $word_a[1]);
                 generate_instruction_end($xw);
                 //echo "\n$word_a[0]\n" . "$word_a[1]\n";
@@ -226,7 +228,7 @@ do {
             break;
         case 'RETURN':
             //generate
-            generate_instruction_start($xw, $line_counter, $word_a[0]);
+            generate_instruction_start($xw, $line_counter, strtoupper($word_a[0]));
             generate_instruction_end($xw);
             break;
 
@@ -235,7 +237,7 @@ do {
             if (symb_regex($word_a[1]))
             {
                 //generate
-                generate_instruction_start($xw, $line_counter, $word_a[0]);
+                generate_instruction_start($xw, $line_counter, strtoupper($word_a[0]));
                 generate_symb($xw, 1, $word_a);
                 generate_instruction_end($xw);
             }
@@ -248,7 +250,7 @@ do {
             // <var>
             if (var_regex($word_a[1])){
                 //generate
-                generate_instruction_start($xw, $line_counter, $word_a[0]);
+                generate_instruction_start($xw, $line_counter, strtoupper($word_a[0]));
                 generate_arg($xw, "var", "arg1", $word_a[1]);
                 generate_instruction_end($xw);
             }
@@ -284,7 +286,7 @@ do {
             if (symb_regex($word_a[3]))
             {
                 //generate
-                generate_instruction_start($xw, $line_counter, $word_a[0]);
+                generate_instruction_start($xw, $line_counter, strtoupper($word_a[0]));
                 generate_arg($xw, "var", "arg1", $word_a[1]);
                 generate_symb($xw, 2, $word_a);
                 generate_symb($xw, 3, $word_a);
@@ -303,7 +305,7 @@ do {
             // <symb>
             if (symb_regex($word_a[2]))
             {
-                generate_instruction_start($xw, $line_counter, $word_a[0]);
+                generate_instruction_start($xw, $line_counter, strtoupper($word_a[0]));
                 generate_arg($xw, "var", "arg1", $word_a[1]);
                 generate_symb($xw, 2, $word_a);
                 generate_instruction_end($xw);
@@ -323,7 +325,7 @@ do {
             if (symb_regex($word_a[3]))
             {
                 //generate
-                generate_instruction_start($xw, $line_counter, $word_a[0]);
+                generate_instruction_start($xw, $line_counter, strtoupper($word_a[0]));
                 generate_arg($xw, "var", "arg1", $word_a[1]);
                 generate_symb($xw, 2, $word_a);
                 generate_symb($xw, 3, $word_a);
@@ -342,7 +344,7 @@ do {
             if (symb_regex($word_a[2]))
             {
                 //generate
-                generate_instruction_start($xw, $line_counter, $word_a[0]);
+                generate_instruction_start($xw, $line_counter, strtoupper($word_a[0]));
                 generate_arg($xw, "var", "arg1", $word_a[1]);
                 generate_symb($xw, 2, $word_a);
                 generate_instruction_end($xw);
@@ -355,7 +357,7 @@ do {
             // <label>
             if (preg_match('/\S+/', $word_a[1])){
                 //generate
-                generate_instruction_start($xw, $line_counter, $word_a[0]);
+                generate_instruction_start($xw, $line_counter, strtoupper($word_a[0]));
                 generate_arg($xw, "label", "arg1", $word_a[1]);
                 generate_instruction_end($xw);
             }
@@ -376,7 +378,7 @@ do {
             if (symb_regex($word_a[3]))
             {
                 //generate
-                generate_instruction_start($xw, $line_counter, $word_a[0]);
+                generate_instruction_start($xw, $line_counter, strtoupper($word_a[0]));
                 generate_arg($xw, "label", "arg1", $word_a[1]);
                 generate_symb($xw, 2, $word_a);
                 generate_symb($xw, 3, $word_a);
@@ -391,7 +393,7 @@ do {
 
             if (preg_match('/int|float|string|bool/', $word_a[2])) {
                 //generate
-                generate_instruction_start($xw, $line_counter, $word_a[0]);
+                generate_instruction_start($xw, $line_counter, strtoupper($word_a[0]));
                 generate_arg($xw, "var", "arg1", $word_a[1]);
                 generate_arg($xw, "type", "arg2", $word_a[2]);
                 generate_instruction_end($xw);
@@ -403,7 +405,7 @@ do {
             if (symb_regex($word_a[1]))
             {
                 //generate
-                generate_instruction_start($xw, $line_counter, $word_a[0]);
+                generate_instruction_start($xw, $line_counter, strtoupper($word_a[0]));
                 generate_symb($xw, 1, $word_a);
                 generate_instruction_end($xw);
             }
@@ -415,7 +417,7 @@ do {
             if (symb_regex($word_a[1]))
             {
                 //generate
-                generate_instruction_start($xw, $line_counter, $word_a[0]);
+                generate_instruction_start($xw, $line_counter, strtoupper($word_a[0]));
                 generate_symb($xw, 1, $word_a);
                 generate_instruction_end($xw);
             }
@@ -425,28 +427,28 @@ do {
             break;
 
         case 'BREAK':
-            generate_instruction_start($xw, $line_counter, $word_a[0]);
+            generate_instruction_start($xw, $line_counter, strtoupper($word_a[0]));
             generate_instruction_end($xw);
             break;
 
         case 'CREATEFRAME':
             //generate
-            generate_instruction_start($xw, $line_counter, $word_a[0]);
+            generate_instruction_start($xw, $line_counter, strtoupper($word_a[0]));
             generate_instruction_end($xw);
             break;
 
         case 'PUSHFRAME':
             //generate
-            generate_instruction_start($xw, $line_counter, $word_a[0]);
+            generate_instruction_start($xw, $line_counter, strtoupper($word_a[0]));
             generate_instruction_end($xw);
             break;
 
         case 'POPFRAME':
             //generate
-            generate_instruction_start($xw, $line_counter, $word_a[0]);
+            generate_instruction_start($xw, $line_counter, strtoupper($word_a[0]));
             generate_instruction_end($xw);
             break;
-
+        /*
         case '.IPPcode19':
             $beg_header++;
             if ($beg_header !== 1) {
@@ -454,14 +456,26 @@ do {
             }
             xmlwriter_start_document($xw, '1.0', 'UTF-8');
             break;
-
+        */
         default:
 
             // #immediate comment after hashtag
             if (preg_match('/#.*/', $word_a[0])) {
                 $comment = 1;
             }
+            //elseif ($beg_header == 0)
+            elseif (preg_match('/.IPPCODE19/', strtoupper($word_a[0])) == 1) {
+                $beg_header++;
+                if ($beg_header !== 1) {
+                    err_out($err->getMissingHeaderErr());
+                }
+                xmlwriter_start_document($xw, '1.0', 'UTF-8');
+            }
             elseif (preg_match('/\s+/', $line) == 1) {}
+            elseif (preg_match('/('. $instruction_list_string_preg .')/', strtoupper($word_a[0])) == 0) {
+                // jedna sa o chybu zleho tvaru instrukcie
+                exit($err->getOpcodeErr());
+            }
             else {
                 if (!feof($input_file)) {
                     err_out($ERR_LEX_SYNTAX);
@@ -470,6 +484,39 @@ do {
             break;
     }//SWITCH
 
+    /*** Processing STATISTICS ***/
+    foreach ($word_a as &$value) {
+        if (preg_match('/#.*/', $value)){
+            $stats_obj->inc_comments();
+        }
+    }
+
+    $to_check = strtoupper($word_a[0]);
+    if ($to_check == 'LABEL'){
+        $stats_obj->inc_labels();
+    }
+
+
+    switch ($to_check) {
+        case 'JUMP':
+        case 'JUMPIFEQ':
+        case 'JUMPIFNEQ':
+            $stats_obj->inc_jumps();
+            break;
+        default:
+            break;
+    }
+
+    // not working // if ($word_a[0] == "" || (preg_match('/#.*/', $to_check) == 1) || (preg_match('/\s+/
+    //', $line) == 1)){}
+    if (preg_match('/('. $instruction_list_string_preg .')/',
+            strtoupper($word_a[0])) == 1){
+        $stats_obj->inc_loc();
+    }
+    else {
+        $not_processed_instructions++;
+    }
+    /*** Stat End ***/
     // Finishing of XML output
     // - there is only closing tag needed for the PROGRAM
     xmlwriter_end_element($xw);
@@ -478,24 +525,34 @@ do {
 
     // opening PROGRAM tag
     if (($beg_header == 1) && ($f == 0)) {
-        echo "<program language=\"IPPcode18\">\n";
+        echo "<program language=\"IPPcode19\">\n";
         $f++;
     }
 
 } while (!feof($input_file)); // WHILE
 echo "</program>\n"; //closing PROGRAM tag
 
+if ($stats_en){
+    $string_to_write_stats = '';
+    if ($stats_obj->isLocEn()){
+        $string_to_write_stats = $string_to_write_stats . $stats_obj->getLoc() . "\n";
+    }
 
-$stats_obj->getComments();
-$stats_obj->getJumps();
-$stats_obj->getLabels();
-$stats_obj->getLoc();
+    if ($stats_obj->isCommentsEn()){
+        $string_to_write_stats = $string_to_write_stats . $stats_obj->getComments() . "\n";
+    }
 
-$string_to_write_stats = '';
-$string_to_write_stats = $string_to_write_stats . $stats_obj->getComments() . "\n" . $stats_obj->getJumps() . "\n" . $stats_obj->getLabels() . "\n" . $stats_obj->getLoc();
+    if ($stats_obj->isLabelsEn()){
+        $string_to_write_stats = $string_to_write_stats . $stats_obj->getLabels() . "\n";
+    }
 
-fwrite($stats_file, $string_to_write_stats);
-fclose($stats_file);
+    if ($stats_obj->isJumpsEn()){
+        $string_to_write_stats = $string_to_write_stats . $stats_obj->getJumps() . "\n";
+    }
+    fwrite($stats_file, $string_to_write_stats);
+    fclose($stats_file);
+}
+
 exit(0);
 
 /***  Fin  ***/

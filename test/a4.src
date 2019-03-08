@@ -1,0 +1,24 @@
+.ipppcode19
+
+# should be - result
+
+# .IPPcode19
+# OK - OK
+
+#.IPPcode19
+#.IPPcode19
+# Fail - OK
+
+# .ippcode19
+# OK - OK
+
+# .IpPCodE19
+# OK - OK
+
+# .IpPCodE19
+# .ippcode19
+# FAIL - OK
+
+# .ipppcode19
+# FAIL - FAIL
+
