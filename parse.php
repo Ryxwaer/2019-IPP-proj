@@ -401,16 +401,7 @@ do {
             else { err_out($ERR_LEX_SYNTAX); }
             break;
 
-        case 'WRITE':  // <symb>
-            if (symb_regex($word_a[1]))
-            {
-                //generate
-                generate_instruction_start($xw, $line_counter, strtoupper($word_a[0]));
-                generate_symb($xw, 1, $word_a);
-                generate_instruction_end($xw);
-            }
-            else { err_out($ERR_LEX_SYNTAX); }
-            break;
+        case 'WRITE':
         case 'EXIT':
         case 'DPRINT':
             // <symb>
@@ -427,22 +418,8 @@ do {
             break;
 
         case 'BREAK':
-            generate_instruction_start($xw, $line_counter, strtoupper($word_a[0]));
-            generate_instruction_end($xw);
-            break;
-
         case 'CREATEFRAME':
-            //generate
-            generate_instruction_start($xw, $line_counter, strtoupper($word_a[0]));
-            generate_instruction_end($xw);
-            break;
-
         case 'PUSHFRAME':
-            //generate
-            generate_instruction_start($xw, $line_counter, strtoupper($word_a[0]));
-            generate_instruction_end($xw);
-            break;
-
         case 'POPFRAME':
             //generate
             generate_instruction_start($xw, $line_counter, strtoupper($word_a[0]));
