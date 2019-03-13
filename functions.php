@@ -4,6 +4,7 @@
  * User: jakub
  * Date: 13.2.19
  * Time: 15:31
+ * This file contains functions that are used in parse.php
  */
 
 
@@ -116,6 +117,11 @@ function generate_instruction_end($xw)
 }
 
 
+/**
+ * Checks string for lex. errors
+ * @param $symb_string - sould be a symb as in IPPcode19
+ * @return bool
+ */
 function symb_regex($symb_string)
 {
     if  (
@@ -131,6 +137,11 @@ function symb_regex($symb_string)
     return false;
 }
 
+/**
+ * Checks string for lex. errors
+ * @param $var_string - should be a variable in IPPcode19
+ * @return bool
+ */
 function var_regex($var_string)
 {
     if (preg_match('/^(LF|TF|GF)@[[:alnum:]\_\-\$\&\%\*]+/', $var_string))

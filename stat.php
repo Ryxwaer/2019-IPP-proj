@@ -96,6 +96,7 @@ class Statistics
     }
 
     /**
+     * Checks whether there is a parameter in array of parameters
      * @param $params_array
      */
     public function setEnable ($params_array){

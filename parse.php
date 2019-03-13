@@ -22,9 +22,7 @@ $ERR_LEX_SYNTAX  = 23;   // lexical or syntax error
 $file_name = 'php://stdin';
 $stats_file_name = '';
 
-/***
- * Parameters processing
- */
+/*** Parameters processing ***/
 
 $longopts  = array(
     "source::",    // Optional value
@@ -108,6 +106,8 @@ if ($debug){
         echo "CPMMENTS ENABLED";
     }
 }
+
+/*** Opening files ***/
 
 $input_file = fopen($file_name, 'r') or die("Couldn't open the file");
 
