@@ -1,4 +1,4 @@
-Documentation of Project Implementation for IPP 2017/2018  
+Documentation of Project Implementation for IPP 2018/2019  
 Name and surname: Jakub Sencak  
 Login: xsenca00  
 
@@ -7,8 +7,7 @@ Login: xsenca00
 ## About
 
 I have implemented extension STATP.  
-I have not implemented short options.  
-This documentation was created in Markdown so keep that in mind.   
+I have not implemented short options.    
 
 --------
 
@@ -34,11 +33,11 @@ Contains the ```main``` part of the script. Everything starts here.
 
 #### debug.php
  
-Contains one value ```$debug``` which sets a lot of stuff to be printed on *stdout*. It may be helpful.
+Contains one value ```$debug``` which is used to print a lot of stuff to *stdout*. Diagnostics information and it may help during debugging.
 
 #### stat.php
 
-Contains definition of ```class Statistics```. It has 4 private parameters which are set to 0 at the beginning and 4 enable parameters which act as flags.  
+Contains definition of ```class Statistics```. It has 4 private parameters which are set to 0 at the beginning and 4 enable parameters which act as flags. These flags are necessary during printing statistics to the statistics file.  
 
 ```public function setEnable ($params_array)```  Checks whether there is a parameter in array of parameters and sets the *enable flags*.
 
@@ -64,7 +63,7 @@ Check string for lexical errors:
 
 #### Errors.php
 
-Takes care of errors. Unfortunately there is no method for exiting the script. Maybe in the future.   
+Takes care of all errors, assess arguments and decides what to do.   
 
 --------
 
@@ -72,18 +71,12 @@ Takes care of errors. Unfortunately there is no method for exiting the script. M
 
 1. Take care of the arguments  
 2. Open files
-3. Process one line of source file - using regexes to check lexical errors
+3. Process one line of source file - using regular expressions to check lexical errors
 4. Output to XML - using XMLWriter functions
 5. Loop 3. and 4.
 6. Close files 
 7. Write statistics
 8. Close files   
-
---------
-
-## Testing
-
-Testing had been done using IFJ class project. No automation till today (12. 03. 2019).   
 
 --------
 

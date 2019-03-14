@@ -1,3 +1,5 @@
+
+
 <?php
 include 'functions.php';
 include 'Errors.php';
@@ -69,7 +71,7 @@ if ( ! $stats &&
 }
 
 if ($help &&
-        ($stats ||
+    ($stats ||
         $source ||
         $stats_obj->isCommentsEn() ||
         $stats_obj->isJumpsEn() ||
@@ -82,6 +84,7 @@ if ($help &&
 elseif ($help) {
     echo "IPP project #1\n"
         ."for more information please see the train guide or RTFM!\n";
+    exit(0);
 }
 
 /*** DEBUG  ***/
@@ -138,6 +141,8 @@ do {
     $line = fgets($input_file);
     $line = preg_replace('/\s+/', " ", $line);
     $word_a = explode(" ", $line);
+    //$word_a = preg_split("/ (\s+|#) /", $line, null, PREG_SPLIT_NO_EMPTY);
+    //var_dump($word_a);
 
     /** Removes empty strings from array */
     if (!strcmp($word_a[0], "")) {
@@ -157,7 +162,7 @@ do {
     if ( ( $beg_header == 0 )
         &&
         ( preg_match('/('. $instruction_list_string_preg .')/',
-            strtoupper($word_a[0])) == 1) ) //obhajoba
+                strtoupper($word_a[0])) == 1) ) //obhajoba
     {
         err_out($err->getMissingHeaderErr());
     }
@@ -191,9 +196,9 @@ do {
             {
                 //generate
                 generate_instruction_start($xw, $line_counter, strtoupper($word_a[0]));
-                generate_arg($xw, "var", "arg1", $word_a[1]);
+                gen_arg($xw, "var", "arg1", $word_a[1]);
                 generate_symb($xw, 2, $word_a);
-                generate_instruction_end($xw);
+                gen_ins_end($xw);
             }
             else{
                 err_out($ERR_LEX_SYNTAX);
@@ -205,8 +210,8 @@ do {
             if (var_regex($word_a[1])){
                 //generate
                 generate_instruction_start($xw, $line_counter, strtoupper($word_a[0]));
-                generate_arg($xw, "var", "arg1", $word_a[1]);
-                generate_instruction_end($xw);
+                gen_arg($xw, "var", "arg1", $word_a[1]);
+                gen_ins_end($xw);
             }
             else{
                 err_out($ERR_LEX_SYNTAX);
@@ -218,8 +223,8 @@ do {
             if (preg_match('/[(a-zA-Z0-9)|(\_\-\$\&\%\*)]+/', $word_a[1])){
                 //generate
                 generate_instruction_start($xw, $line_counter, strtoupper($word_a[0]));
-                generate_arg($xw, "label", "arg1", $word_a[1]);
-                generate_instruction_end($xw);
+                gen_arg($xw, "label", "arg1", $word_a[1]);
+                gen_ins_end($xw);
                 //echo "\n$word_a[0]\n" . "$word_a[1]\n";
             }
             else{
@@ -229,7 +234,7 @@ do {
         case 'RETURN':
             //generate
             generate_instruction_start($xw, $line_counter, strtoupper($word_a[0]));
-            generate_instruction_end($xw);
+            gen_ins_end($xw);
             break;
 
         case 'PUSHS':
@@ -239,7 +244,7 @@ do {
                 //generate
                 generate_instruction_start($xw, $line_counter, strtoupper($word_a[0]));
                 generate_symb($xw, 1, $word_a);
-                generate_instruction_end($xw);
+                gen_ins_end($xw);
             }
             else{
                 err_out($ERR_LEX_SYNTAX);
@@ -251,8 +256,8 @@ do {
             if (var_regex($word_a[1])){
                 //generate
                 generate_instruction_start($xw, $line_counter, strtoupper($word_a[0]));
-                generate_arg($xw, "var", "arg1", $word_a[1]);
-                generate_instruction_end($xw);
+                gen_arg($xw, "var", "arg1", $word_a[1]);
+                gen_ins_end($xw);
             }
             else {
                 err_out($ERR_LEX_SYNTAX);
@@ -287,10 +292,10 @@ do {
             {
                 //generate
                 generate_instruction_start($xw, $line_counter, strtoupper($word_a[0]));
-                generate_arg($xw, "var", "arg1", $word_a[1]);
+                gen_arg($xw, "var", "arg1", $word_a[1]);
                 generate_symb($xw, 2, $word_a);
                 generate_symb($xw, 3, $word_a);
-                generate_instruction_end($xw);
+                gen_ins_end($xw);
             }
             else{ err_out($ERR_LEX_SYNTAX); }
             break;
@@ -306,9 +311,9 @@ do {
             if (symb_regex($word_a[2]))
             {
                 generate_instruction_start($xw, $line_counter, strtoupper($word_a[0]));
-                generate_arg($xw, "var", "arg1", $word_a[1]);
+                gen_arg($xw, "var", "arg1", $word_a[1]);
                 generate_symb($xw, 2, $word_a);
-                generate_instruction_end($xw);
+                gen_ins_end($xw);
             }
             else{ err_out($ERR_LEX_SYNTAX); }
             break;
@@ -326,10 +331,10 @@ do {
             {
                 //generate
                 generate_instruction_start($xw, $line_counter, strtoupper($word_a[0]));
-                generate_arg($xw, "var", "arg1", $word_a[1]);
+                gen_arg($xw, "var", "arg1", $word_a[1]);
                 generate_symb($xw, 2, $word_a);
                 generate_symb($xw, 3, $word_a);
-                generate_instruction_end($xw);
+                gen_ins_end($xw);
             }
             else { err_out($ERR_LEX_SYNTAX); }
             break;
@@ -345,9 +350,9 @@ do {
             {
                 //generate
                 generate_instruction_start($xw, $line_counter, strtoupper($word_a[0]));
-                generate_arg($xw, "var", "arg1", $word_a[1]);
+                gen_arg($xw, "var", "arg1", $word_a[1]);
                 generate_symb($xw, 2, $word_a);
-                generate_instruction_end($xw);
+                gen_ins_end($xw);
             }
             else { err_out($ERR_LEX_SYNTAX); }
             break;
@@ -358,8 +363,8 @@ do {
             if (preg_match('/\S+/', $word_a[1])){
                 //generate
                 generate_instruction_start($xw, $line_counter, strtoupper($word_a[0]));
-                generate_arg($xw, "label", "arg1", $word_a[1]);
-                generate_instruction_end($xw);
+                gen_arg($xw, "label", "arg1", $word_a[1]);
+                gen_ins_end($xw);
             }
             else { err_out($ERR_LEX_SYNTAX); }
             break;
@@ -379,10 +384,10 @@ do {
             {
                 //generate
                 generate_instruction_start($xw, $line_counter, strtoupper($word_a[0]));
-                generate_arg($xw, "label", "arg1", $word_a[1]);
+                gen_arg($xw, "label", "arg1", $word_a[1]);
                 generate_symb($xw, 2, $word_a);
                 generate_symb($xw, 3, $word_a);
-                generate_instruction_end($xw);
+                gen_ins_end($xw);
             }
             else { err_out($ERR_LEX_SYNTAX); }
             break;
@@ -394,9 +399,9 @@ do {
             if (preg_match('/int|float|string|bool/', $word_a[2])) {
                 //generate
                 generate_instruction_start($xw, $line_counter, strtoupper($word_a[0]));
-                generate_arg($xw, "var", "arg1", $word_a[1]);
-                generate_arg($xw, "type", "arg2", $word_a[2]);
-                generate_instruction_end($xw);
+                gen_arg($xw, "var", "arg1", $word_a[1]);
+                gen_arg($xw, "type", "arg2", $word_a[2]);
+                gen_ins_end($xw);
             }
             else { err_out($ERR_LEX_SYNTAX); }
             break;
@@ -410,7 +415,7 @@ do {
                 //generate
                 generate_instruction_start($xw, $line_counter, strtoupper($word_a[0]));
                 generate_symb($xw, 1, $word_a);
-                generate_instruction_end($xw);
+                gen_ins_end($xw);
             }
             else{
                 err_out($ERR_LEX_SYNTAX);
@@ -423,7 +428,7 @@ do {
         case 'POPFRAME':
             //generate
             generate_instruction_start($xw, $line_counter, strtoupper($word_a[0]));
-            generate_instruction_end($xw);
+            gen_ins_end($xw);
             break;
         /*
         case '.IPPcode19':
@@ -510,7 +515,11 @@ do {
     }
 
 } while (!feof($input_file)); // WHILE
-echo "</program>\n"; //closing PROGRAM tag
+
+if ($beg_header == 1) {
+    echo "</program>\n"; //closing PROGRAM tag
+}
+
 
 if ($stats_en){
     $string_to_write_stats = '';

@@ -59,7 +59,7 @@ function generate_instruction_start($xw, &$line_counter, $word)
  * param: $attr
  * return: void
  */
-function generate_arg($xw, $type, $arg, $attr)
+function gen_arg($xw, $type, $arg, $attr)
 {
     //  <arg1
     xmlwriter_start_element($xw, $arg);
@@ -92,15 +92,15 @@ function generate_symb($xw, $order, $word_a)
     if (preg_match('/^(L|T|G)F@[[:alnum:]\_\-\$\&\%\*]+/', $word_a[$order]) !== 1) {
         $txt = explode ("@",$word_a[$order]);
         if (count($txt) == 1) {
-            generate_arg($xw, $txt[0], $arg, "");
+            gen_arg($xw, $txt[0], $arg, "");
         }
         else {
-            generate_arg($xw, $txt[0], $arg, $txt[1]);
+            gen_arg($xw, $txt[0], $arg, $txt[1]);
         }
         //var_dump($txt);
     }
     else {
-        generate_arg($xw, "var", $arg, $word_a[$order]);
+        gen_arg($xw, "var", $arg, $word_a[$order]);
     }
 }
 
@@ -111,7 +111,7 @@ function generate_symb($xw, $order, $word_a)
  *
  * return: void
  */
-function generate_instruction_end($xw)
+function gen_ins_end($xw)
 {
     xmlwriter_end_element($xw);
 }
