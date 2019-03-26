@@ -228,7 +228,7 @@ class XmlParser(object):
     def Parse(self, xmlPath):
         tree = ElementTree.parse(xmlPath)
 
-        root = tree.getroot();
+        root = tree.getroot()
         self.__CheckRoot(root)
         instructions = list()
         for instruction in root:

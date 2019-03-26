@@ -1,5 +1,5 @@
 import sys
-from Errors import *
+from errors import Errors
 
 
 class FrameStack:
