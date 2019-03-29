@@ -8,6 +8,8 @@ class Errors:
         self.xml_wrong_format = 31
         self.xml_lex_or_sem_err = 32
 
+        self.semantic_error_nondefined_label = 52
+        self.wrong_operand_type = 53
         self.non_existing_variable = 54
         self.frame_not_defined = 55
         self.missing_value = 56
@@ -42,6 +44,10 @@ class FrameNotDefinedException(Exception):
 
 
 class InternalErrorException(Exception):
+    pass
+
+
+class SemanticErrorLabel(Exception):
     pass
 
 

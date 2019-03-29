@@ -1,10 +1,8 @@
 import argparse
-import xml.etree.ElementTree as ET
 import sys
 from errors import *
-# from instruction import Instruction
-
 from framestack import FrameStack
+from xmlparser import XMLParser
 
 
 class ArgumentType:
@@ -15,47 +13,6 @@ class ArgumentType:
     FLOAT = 5
     TYPE = 6
     NIL = 7
-
-
-class XMLParser:
-    def __init__(self):
-        self.order = 0
-
-    def inc_order(self):
-        self.order += 1
-
-    def ParseXml(self, xml, reading_from):
-        if reading_from == 2:  # String
-            try:
-                tree = ET.ElementTree(ET.fromstring(xml))
-            except ET.ParseError:
-                raise XMLStructureException()
-        else:  # File
-            tree = ET.parse(xml)
-
-        # Check the root
-        program = tree.getroot()
-        if program.tag != "program" or len(program.attrib) > 3 or program.attrib.get('language') != 'IPPcode19':
-            raise XMLFormatException()
-
-        instructions = []
-        for instruction in program:
-            if instruction.tag == 'instruction':
-                self.inc_order()
-                if int(instruction.get("order")) == self.order:
-                    instructions.append(self.make_instruction(instruction))
-                else:
-                    raise XMLFormatException()
-                # print(self.order, int(instruction.get("order")), len(instructions))
-
-        # print(instructions)
-        return instructions
-
-    def make_instruction(self, ins):
-        ins_opcode = ins.attrib['opcode']
-        ins_opcode = ins_opcode.upper()
-        if ins_opcode == "MOVE":
-            pass
 
 
 def main():
@@ -92,7 +49,8 @@ def main():
 
     xml_parser = XMLParser()
     instructions = xml_parser.ParseXml(source_file, reading_from)
-    # print(instructions)
+    for idx in range(0, 110):
+        print(instructions[idx].order, instructions[idx].name, instructions[idx].arguments)
 
 
 if __name__ == "__main__":
@@ -113,6 +71,20 @@ if __name__ == "__main__":
         sys.exit(error.frame_not_defined)
     except InternalErrorException:
         sys.exit(error.internal_error)
+    except SemanticErrorLabel:
+        sys.exit(error.semantic_error_nondefined_label)
+    except OperandTypeException:
+        sys.exit(error.wrong_operand_type)
+    except NonExistingVariableException:
+        sys.exit(error.missing_value)
+    except NonExistingFrameException:
+        sys.exit(error.frame_not_defined)
+    except MissingValueException:
+        sys.exit(error.missing_value)
+    except ValueOperandException:
+        sys.exit(error.missing_value)
+    except StringException:
+        sys.exit(error.working_with_string)
     except SystemExit as ex:
         if ex.code != 0:
             raise MissingParamException()
