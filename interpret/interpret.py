@@ -15,6 +15,46 @@ class ArgumentType:
     NIL = 7
 
 
+class IPStack():
+    def __init__(self):
+        self.stack = list()
+        self.ip = 0
+
+    def get_ip(self):
+        return self.stack[self.ip]
+
+    def pop_ip(self):
+        if self.stack:
+            return self.stack.pop()
+        else:
+            pass  # $#$
+
+    def push_ip(self, new_ip):
+        self.stack.append(new_ip)
+
+
+class Interpret:
+    def __init__(self, ins):
+        self.framestack = FrameStack()
+        self.instructions_list = ins
+        self.ip_stack = IPStack()
+        self.labels = dict()
+        pass
+
+    def run_interpret(self):
+        if self.instructions_list is not None:
+            for self.ip_stack.ip in range(0, len(self.instructions_list)):
+                # print(self.instructions_list[self.ip_stack.ip].order)
+                self.instructions_list[self.ip_stack.ip].run_instruction(self.framestack, self.ip_stack, self.labels)
+
+        print("GF", self.framestack.GlobalFrame)
+        print("LF", self.framestack.LocalFrame)
+        print("TF", self.framestack.TmpFrame)
+        print("FStack", self.framestack.frameStack)
+        print("IPS", self.ip_stack.stack)
+        print("labels", self.labels)
+
+
 def main():
     file_flag = 1
     string_flag = 2
@@ -49,8 +89,11 @@ def main():
 
     xml_parser = XMLParser()
     instructions = xml_parser.ParseXml(source_file, reading_from)
-    for idx in range(0, 110):
-        print(instructions[idx].order, instructions[idx].name, instructions[idx].arguments)
+    for idx in range(0, len(instructions)):
+        # print(instructions[idx].order, instructions[idx].name, instructions[idx].arguments)
+        pass
+    interpret = Interpret(instructions)
+    interpret.run_interpret()
 
 
 if __name__ == "__main__":

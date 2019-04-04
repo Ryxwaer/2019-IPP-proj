@@ -3,6 +3,7 @@ from errors import *
 from instruction import *
 import operator
 
+
 class XMLParser:
     def __init__(self):
         self.order = 0
@@ -17,7 +18,10 @@ class XMLParser:
             except ET.ParseError:
                 raise XMLStructureException()
         else:  # File
-            tree = ET.parse(xml)
+            try:
+                tree = ET.parse(xml)
+            except ET.ParseError:
+                raise XMLStructureException()
 
         # Check the root
         program = tree.getroot()
@@ -31,7 +35,7 @@ class XMLParser:
                 # if int(instruction.get("order")) == self.order: # kontrola poradia
                 instructions.append(self.make_instruction(instruction))
             else:
-                raise XMLFormatException()
+                raise XMLStructureException()
                 # print(self.order, int(instruction.get("order")), len(instructions))
 
         # print(instructions)

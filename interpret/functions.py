@@ -7,8 +7,8 @@ from Debug import *
 #### Looks for and instuction in dictionary of instructions
 #### and gets number of arguments necessary
 
-
-def arg_count(x):
+"""
+def arg_count(ins):
     Instruction_arg = {
         'MOVE': 2,
         'DEFVAR': 1,
@@ -67,8 +67,11 @@ def arg_count(x):
         'JUMPIFEQS': 3,
         'JUMPIFNEQS': 3,
     }
-    return Instruction_arg[x]
+    return Instruction_arg[ins]
+"""
 
+def argument_type(ins):
+    return
 
 def get_instructions(whole_program):
     instructions_array = [""]

@@ -1,46 +1,45 @@
 import sys
-from errors import Errors
+from errors import *
 
 
 class FrameStack:
     def __init__(self):
-        self.eee = Errors()
         self.GF = 0
         self.active = 0
         self.frameStack = []
 
         self.GlobalFrame = {}
         self.LocalFrame = {}
-        self.TmpFrame = {}
+        self.TmpFrame = None
 
-        self.frameStack.append({})  # set first frame
+        # self.frameStack.append({})  # set first frame
+
+    def flush_local_frame(self):
+        self.LocalFrame = dict()
 
     def get_global_frame(self):
         return self.frameStack[self.GF]
 
     def overwrite_tmp_frame(self):
-        self.TmpFrame = {}
+        self.TmpFrame = dict()
 
     def create_frame(self):
-        # vynulovat TmpFrame a vlozit ho na zasobnik
-        self.overwrite_tmp_frame()
-        # self.active += 1
-        self.frameStack.append(self.TmpFrame)
+        self.TmpFrame = dict()
+        # self.overwrite_tmp_frame()
 
     def push_frame(self):
         if self.TmpFrame is None:
+            raise FrameNotDefinedException()
             pass
-            sys.exit(self.eee.frame_not_defined)
         self.frameStack.append(self.TmpFrame)
-        self.TmpFrame = None
+        # self.TmpFrame = None #$#
 
     def pop_frame(self):
         # treba pridat podmienku na 0
+        if len(self.frameStack) == 0:
+            raise FrameNotDefinedException()
         # vrcholovy LF frame presunut do TmpFrame
         self.TmpFrame = self.frameStack.pop()
-        if self.TmpFrame is None:
-            pass
-            sys.exit(self.eee.frame_not_defined)
 
         # if self.active != 0:
         #    self.active -= 1
