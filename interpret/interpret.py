@@ -33,19 +33,38 @@ class IPStack():
         self.stack.append(new_ip)
 
 
+class DataStack():
+    def __init__(self):
+        self.data_stack = []
+
+    def pushs(self, data):
+        self.data_stack.append(data)
+
+    def pops(self):
+        if self.data_stack:
+            return self.data_stack.pop()
+
+
 class Interpret:
     def __init__(self, ins):
         self.framestack = FrameStack()
         self.instructions_list = ins
         self.ip_stack = IPStack()
         self.labels = dict()
+        self.data_stack = DataStack()
         pass
+
+    def print_stack(self, d_stack):
+        for i in d_stack:
+            print(i)
+        print("GF", self.framestack.GlobalFrame)
 
     def run_interpret(self):
         if self.instructions_list is not None:
             for self.ip_stack.ip in range(0, len(self.instructions_list)):
-                # print(self.instructions_list[self.ip_stack.ip].order)
-                self.instructions_list[self.ip_stack.ip].run_instruction(self.framestack, self.ip_stack, self.labels)
+                print(self.instructions_list[self.ip_stack.ip].order)
+                # self.print_stack(self.data_stack.data_stack)
+                self.instructions_list[self.ip_stack.ip].run_instruction(self.framestack, self.ip_stack, self.labels, self.data_stack)
 
         print("GF", self.framestack.GlobalFrame)
         print("LF", self.framestack.LocalFrame)
@@ -89,9 +108,12 @@ def main():
 
     xml_parser = XMLParser()
     instructions = xml_parser.ParseXml(source_file, reading_from)
+    """
     for idx in range(0, len(instructions)):
-        # print(instructions[idx].order, instructions[idx].name, instructions[idx].arguments)
+        print(instructions[idx].order, instructions[idx].name, instructions[idx].arguments)
         pass
+    exit(0)
+    """
     interpret = Interpret(instructions)
     interpret.run_interpret()
 
@@ -119,18 +141,18 @@ if __name__ == "__main__":
     except OperandTypeException:
         sys.exit(error.wrong_operand_type)
     except NonExistingVariableException:
-        sys.exit(error.missing_value)
+        sys.exit(error.non_existing_variable)
     except NonExistingFrameException:
         sys.exit(error.frame_not_defined)
     except MissingValueException:
         sys.exit(error.missing_value)
     except ValueOperandException:
-        sys.exit(error.missing_value)
+        sys.exit(error.value_operand)
     except StringException:
         sys.exit(error.working_with_string)
     except SystemExit as ex:
-        if ex.code != 0:
-            raise MissingParamException()
+        # if ex.code != 0:
+        #    raise MissingParamException()
         sys.exit(ex.code)
     except BaseException:
         raise InternalErrorException()

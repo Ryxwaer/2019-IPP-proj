@@ -5,7 +5,7 @@ from errors import *
 class FrameStack:
     def __init__(self):
         self.GF = 0
-        self.active = 0
+        self.active = -1
         self.frameStack = []
 
         self.GlobalFrame = {}
