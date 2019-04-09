@@ -1,27 +1,14 @@
-import sys
-from errors import *
+from errors import FrameNotDefinedException
 
 
 class FrameStack:
     def __init__(self):
         self.GF = 0
         self.active = -1
-        self.frameStack = []
 
         self.GlobalFrame = {}
-        self.LocalFrame = {}
+        self.frameStack = []
         self.TmpFrame = None
-
-        # self.frameStack.append({})  # set first frame
-
-    def flush_local_frame(self):
-        self.LocalFrame = dict()
-
-    def get_global_frame(self):
-        return self.frameStack[self.GF]
-
-    def overwrite_tmp_frame(self):
-        self.TmpFrame = dict()
 
     def create_frame(self):
         self.TmpFrame = dict()
@@ -40,22 +27,3 @@ class FrameStack:
             raise FrameNotDefinedException()
         # vrcholovy LF frame presunut do TmpFrame
         self.TmpFrame = self.frameStack.pop()
-
-        # if self.active != 0:
-        #    self.active -= 1
-
-    # def get_stack_frame(self):
-    #    return self.frameStack
-
-    # def get_active_frame(self):
-    #    return self.frameStack[self.active]
-
-    # def get_active_frame_pointer(self):
-    #    return self.active
-
-    # def get_global_frame_pointer(self):
-    #    return self.GF
-
-    # def set_active_frame(self, new_active):
-    #    self.active = new_active
-
