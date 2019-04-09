@@ -19,57 +19,53 @@ class Errors:
         self.internal_error = 99
 
 
-class MissingParamException(Exception):
+class MissingParamException(Exception):  # 10
     pass
 
 
-class OpenInputFileException(Exception):
+class OpenInputFileException(Exception):  # 11
     pass
 
 
-class OpenSourceFileException(Exception):
+class OpenSourceFileException(Exception):  # 12
     pass
 
 
-class XMLFormatException(Exception):
+class XMLFormatException(Exception):  # 31
     pass
 
 
-class XMLStructureException(Exception):
+class XMLStructureException(Exception):  # 32
     pass
 
 
-class FrameNotDefinedException(Exception):
+class SemanticErrorLabel(Exception):  # 52
     pass
 
 
-class InternalErrorException(Exception):
+class OperandTypeException(Exception):  # 53
     pass
 
 
-class SemanticErrorLabel(Exception):
+class NonExistingVariableException(Exception):  # 54
     pass
 
 
-class OperandTypeException(Exception):
+class FrameNotDefinedException(Exception):  # 55
     pass
 
 
-class NonExistingVariableException(Exception):
+class MissingValueException(Exception):  # 56
     pass
 
 
-class NonExistingFrameException(Exception):
+class ValueOperandException(Exception):  # 57
     pass
 
 
-class MissingValueException(Exception):
+class StringException(Exception):  # 58
     pass
 
 
-class ValueOperandException(Exception):
-    pass
-
-
-class StringException(Exception):
+class InternalErrorException(Exception):  # 99
     pass
