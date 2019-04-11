@@ -67,7 +67,6 @@ class Interpret:
                 self.instructions_list[self.ip_stack.ip].run_instruction(self.framestack, self.ip_stack, self.labels, self.data_stack)
 
         print("GF", self.framestack.GlobalFrame)
-        print("LF", self.framestack.LocalFrame)
         print("TF", self.framestack.TmpFrame)
         print("FStack", self.framestack.frameStack)
         print("IPS", self.ip_stack.stack)
@@ -132,8 +131,6 @@ if __name__ == "__main__":
         sys.exit(error.xml_wrong_format)
     except XMLStructureException:
         sys.exit(error.xml_lex_or_sem_err)
-    except FrameNotDefinedException:
-        sys.exit(error.frame_not_defined)
     except InternalErrorException:
         sys.exit(error.internal_error)
     except SemanticErrorLabel:
@@ -142,7 +139,7 @@ if __name__ == "__main__":
         sys.exit(error.wrong_operand_type)
     except NonExistingVariableException:
         sys.exit(error.non_existing_variable)
-    except NonExistingFrameException:
+    except FrameNotDefinedException:  # NonExistingFrameException:
         sys.exit(error.frame_not_defined)
     except MissingValueException:
         sys.exit(error.missing_value)

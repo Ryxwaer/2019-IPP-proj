@@ -1,2 +1,9 @@
 framestack
     odkomentovat # self.TmpFrame = None #$#
+instruction
+    Doplnit read z INPUT suboru
+    rozložiť inštrukcie podľa počtu a typu argumentov
+
+
+
+    print("bubu", end='')

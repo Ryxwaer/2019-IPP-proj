@@ -1,5 +1,7 @@
 from errors import *
 import sys
+import re
+
 
 class Instruction:
     def __init__(self, insXML):
@@ -89,9 +91,6 @@ class Instruction:
 
     """GET"""
 
-    def argument_type(self, ins):
-        return self.Instruction_args[ins]
-
     def arg_count(self, ins):
         return len(self.Instruction_args[ins])
 
@@ -100,17 +99,13 @@ class Instruction:
             return True
         return False
 
-    def is_var_exception(self, idx):
-        if self.arguments[idx]['type'] not in self.var_type_list:
-            raise OperandTypeException()
-
     """Verification"""
 
     def check_arg_count(self):
         """Checks whether number of arguments is correct for every instruction"""
         if len(self.arguments) == self.arg_count(self.name):
             return
-        raise XMLStructureException()
+        raise XMLFormatException()
 
     def check_arg_type(self):
         for idx in range(0, len(self.arguments)):
@@ -130,6 +125,16 @@ class Instruction:
     def check_arguments(self):
         self.check_arg_count()
         self.check_arg_type()
+
+    def get_symb_value(self, idx, framestack):
+        symb1_value = self.arguments[idx]['value']
+        symb1_type = self.arguments[idx]['type']
+
+        if self.is_var(idx):  # 1 is index of second item in argument list
+            symb1 = self.get_value_from_frame(framestack, idx)
+            symb1_value = symb1[0]
+            symb1_type = symb1[1]
+        return symb1_value, symb1_type
 
     def get_value_from_frame(self, framestack, idx):
         variable = self.arguments[idx]['value']
@@ -160,7 +165,8 @@ class Instruction:
         if frame_to_save == "GF":
             framestack.GlobalFrame[variable_name] = value_to_save
         elif frame_to_save == "LF":
-            framestack.frameStack[framestack.active][variable_name] = value_to_save
+            if framestack.frameStack:
+                framestack.frameStack[framestack.active][variable_name] = value_to_save
         elif frame_to_save == "TF":
             framestack.TmpFrame[variable_name] = value_to_save
         else:
@@ -189,7 +195,6 @@ class Instruction:
             framestack.TmpFrame[value1] = [value2, type2]
         else:
             raise XMLStructureException()  # $#$ - malo by to byt osetrenie chyby syntaktickej
-
         """
         return
 
@@ -202,7 +207,7 @@ class Instruction:
         pass
 
     def run_instruction(self, framestack, ip_stack, labels, data_stack):
-        # sem pojde SWITCH s volanim na vykonanie instrukcie
+        """sem pojde SWITCH s volanim na vykonanie instrukcie"""
         self.check_arguments()
         if self.name == "MOVE":
             self.save_to_variable(framestack)
@@ -215,11 +220,15 @@ class Instruction:
                 if frame == "GF":
                     framestack.GlobalFrame[value] = None
                 elif frame == "LF":
-                    loc = dict()
-                    loc[value] = None
-                    framestack.frameStack[framestack.active][value] = None
+                    if framestack.frameStack:
+                        framestack.frameStack[framestack.active][value] = None
+                    else:
+                        raise FrameNotDefinedException()
                 elif frame == "TF":
-                    framestack.TmpFrame[value] = None
+                    if framestack.TmpFrame:
+                        framestack.TmpFrame[value] = None
+                    else:
+                        raise FrameNotDefinedException()
                 else:
                     raise FrameNotDefinedException()
             else:
@@ -230,12 +239,7 @@ class Instruction:
             framestack.push_frame()
         if self.name == "POPFRAME":
             framestack.pop_frame()
-        """
-        if self.name == "LABEL":
-            if self.arguments[0]['value'] in labels:
-                raise SemanticErrorLabel()
-            labels[self.arguments[0]['value']] = self.order
-        """
+
         if self.name == "LABEL":
             """Vytvori zaznam o navesti"""
             label_name = self.arguments[0]['value']
@@ -246,8 +250,9 @@ class Instruction:
 
         if self.name == "CALL":
             ip_stack.push_ip(self.order)
-            print("VALUE", self.arguments[0]['value'])
-            # ip_stack.ip = labels[self.arguments[0]['value']]
+            if self.arguments[0]['value'] in labels:
+                ip_stack.ip = labels[self.arguments[0]['value']]
+            print("VALUE", self.arguments[0]['value'], ip_stack.ip)
         if self.name == "RETURN":
             ip_stack.ip = ip_stack.pop_ip()
 
@@ -340,6 +345,7 @@ class Instruction:
             self.save_value(framestack, variable, frame_to_save, [value, "bool"])
             pass
         if self.name == "READ":
+            """Doplnit read z INPUT suboru"""
             variable = self.arguments[0]['value']
             frame_to_save = self.arguments[0]['type']
 
@@ -398,6 +404,8 @@ class Instruction:
         if self.name == "INT2CHAR":
             variable = self.arguments[0]['value']
             frame_to_save = self.arguments[0]['type']
+
+            # symb1_value, symb1_type = self.get_symb_value(self.symb_idx1, framestack)
 
             symb1_value = self.arguments[self.symb_idx1]['value']
             symb1_type = self.arguments[self.symb_idx1]['type']
