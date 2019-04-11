@@ -16,7 +16,7 @@ function err_out($input_file, $ret_val)
     if ($input_file != 0) {
         fclose($input_file);
     }
-    kws();
+    //kws();
     exit($ret_val);
 }
 
@@ -29,16 +29,21 @@ $ERR_FATAL_ERROR = 99;   // sth went horribly wrong
 $ERR_LEX_SYNTAX = 21;   // lexical or syntax error
 $directory = ".";
 $f_recursive = 0;
-$parse_script = 0;
-$py_script = 0;
+$parse_script = "parse.php";
+$py_script = "interpret.py";
 $fp_py_script = 0;
 $fp_parse_script = 0;
-var_dump($argv);
+$flag_int_only = 0;
+$flag_parse_only = 0;
+
+if (false){
+    var_dump($argv);
+}
 $param_counter = count($argv);
 $input_file = 0;
 //echo $param_counter;
 if (($param_counter == 2) && ($argv[1] == "--help")) {
-    echo "IPP project #1\n" . "for more information please see the train guide or RTFM!\n";
+    echo "IPP project #1\n" . "for more information please see the train guide.\n";
     exit;
 } elseif (($argc !== 1) && ($argv[1] == "--help") && ($param_counter !== 2)) {
     err_out($input_file, $ERR_MISSING_PARAM);
@@ -46,15 +51,41 @@ if (($param_counter == 2) && ($argv[1] == "--help")) {
 }
 $shortopts = "";
 $longopts = array(
-    "source::",
     "recursive",
     "directory::",
     "parse-script::",
     "int-script::",
+    "int-only",
+    "parse-only",
 );
 $options = getopt($shortopts, $longopts);
 //var_dump($options);
 // FILE INPUT //
+
+$help = array_key_exists("help", $options);
+$flag_recursive = array_key_exists("recursive", $options);
+$flag_directory = array_key_exists("directory", $options);
+$flag_parse_script = array_key_exists("parse-script", $options);
+$flag_int_script = array_key_exists("int-script", $options);
+$flag_int_only = array_key_exists("int-only", $options);
+$flag_parse_only = array_key_exists("parse-only", $options);
+
+if (false){
+    echo "REC", $flag_recursive, "\n";
+    echo "DIR", $flag_directory, "\n" ;
+    echo "ParseScript", $flag_parse_script, "\n" ;
+    echo "INT", $flag_int_script, "\n";
+    echo "INTONLY", $flag_int_only, "\n" ;
+    echo "ParseOnly", $flag_parse_only, "\n";
+
+}
+
+if ($flag_parse_only && $flag_int_only){
+    echo "Warning: int-only and parse-only mustn't be used together!";
+    echo "It makes no sense";
+    exit;
+}
+
 foreach ($options as $key => $value) {
     if ($key == "directory") {
         $directory = "$options[$key]";
