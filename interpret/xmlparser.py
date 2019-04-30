@@ -3,34 +3,6 @@ from errors import *
 from instruction import *
 import operator
 
-class Validate:
-    def __init__(self):
-        self._string_pattern = "^string@(?:(\\[0-9]{3})|[^\s\\#])*$"
-        self._integer_pattern = "/^int@[+-]?[0-9]+$"
-        self._bool_pattern = "/^bool@(true|false)$"
-
-        self.INT = 120
-        self.STRING = 125
-        self.BOOL = 130
-
-        prog = re.compile(pattern)
-
-    def validate(self, to_validate, type):
-        result = None
-        pattern_to_use = ''
-        if type == self.INT:
-            pattern_to_use = self._integer_pattern
-        elif type == self.STRING:
-            pattern_to_use = self._string_pattern
-        elif type == self.BOOL:
-            pattern_to_use = self._bool_pattern
-        else:
-            raise InternalErrorException()
-
-        result = re.match(pattern_to_use, to_validate)
-        if not result:
-            raise XMLStructureException()
-
 
 class XMLParser:
     def __init__(self):

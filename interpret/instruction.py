@@ -3,6 +3,33 @@ import sys
 import re
 
 
+class Validate:
+    def __init__(self):
+        self._string_pattern = "^string@(?:(\\[0-9]{3})|[^\s\\#])*$"
+        self._integer_pattern = "/^int@[+-]?[0-9]+$"
+        self._bool_pattern = "/^bool@(true|false)$"
+
+        self.INT = 120
+        self.STRING = 125
+        self.BOOL = 130
+
+    def validate(self, to_validate, type):
+        result = None
+        pattern_to_use = ''
+        if type == self.INT:
+            pattern_to_use = self._integer_pattern
+        elif type == self.STRING:
+            pattern_to_use = self._string_pattern
+        elif type == self.BOOL:
+            pattern_to_use = self._bool_pattern
+        else:
+            raise InternalErrorException()
+
+        result = re.match(pattern_to_use, to_validate)
+        if not result:
+            raise XMLStructureException()
+
+
 class Instruction:
     def __init__(self, insXML):
         self.name = insXML.attrib['opcode'].upper()
@@ -92,6 +119,7 @@ class Instruction:
     """GET"""
 
     def arg_count(self, ins):
+        """Retruns value of arguments for given instruction"""
         return len(self.Instruction_args[ins])
 
     def is_var(self, idx):
@@ -108,6 +136,7 @@ class Instruction:
         raise XMLFormatException()
 
     def check_arg_type(self):
+        """Checks whether corresponding types are OK"""
         for idx in range(0, len(self.arguments)):
             if self.Instruction_args[self.name][idx] == self.arguments[idx]['type']:
                 pass
@@ -123,10 +152,12 @@ class Instruction:
             idx += 1
 
     def check_arguments(self):
+        """Shortens the code"""
         self.check_arg_count()
         self.check_arg_type()
 
     def get_symb_value(self, idx, framestack):
+        """returns tuple with value and type of variable from given index"""
         symb1_value = self.arguments[idx]['value']
         symb1_type = self.arguments[idx]['type']
 
@@ -137,6 +168,7 @@ class Instruction:
         return symb1_value, symb1_type
 
     def get_value_from_frame(self, framestack, idx):
+        """GEts value from given frame"""
         variable = self.arguments[idx]['value']
         frame = self.arguments[idx]['type']
 
@@ -162,6 +194,7 @@ class Instruction:
         return value_type_list
 
     def save_value(self, framestack, variable_name, frame_to_save, value_to_save):
+        """Saves value to given variable and active frame"""
         if frame_to_save == "GF":
             framestack.GlobalFrame[variable_name] = value_to_save
         elif frame_to_save == "LF":
@@ -173,6 +206,8 @@ class Instruction:
             raise XMLStructureException()  # $#$ - malo by to byt osetrenie chyby syntaktickej
 
     def save_to_variable(self, framestack):
+        """used in MOVE instruction - it was one of the first better do not touch"""
+        """actually it should be redone so it was unified using save_value() method"""
         value1 = self.arguments[0]['value']
         frame_to_save = self.arguments[0]['type']
 
@@ -185,26 +220,13 @@ class Instruction:
             pass
 
         self.save_value(framestack, value1, frame_to_save, value_to_save)
-
-        """
-        if frame_to_save == "GF":
-            framestack.GlobalFrame[value1] = [value2, type2]
-        elif frame_to_save == "LF":
-            framestack.LocalFrame[value1] = [value2, type2]
-        elif frame_to_save == "TF":
-            framestack.TmpFrame[value1] = [value2, type2]
-        else:
-            raise XMLStructureException()  # $#$ - malo by to byt osetrenie chyby syntaktickej
-        """
         return
 
     def must_be(self, expected, given):
+        """checks type, raises exception when not"""
         if expected != given:
             raise OperandTypeException()
         return
-
-    def arithmetic_operation(self):
-        pass
 
     def run_instruction(self, framestack, ip_stack, labels, data_stack):
         """sem pojde SWITCH s volanim na vykonanie instrukcie"""
@@ -479,15 +501,3 @@ class Instruction:
             print("Active LocalFrame:", framestack.frameStack, file=sys.stderr)
             print("Temporary Frame", framestack.TmpFrame, file=sys.stderr)
             pass
-
-
-        """
-        if self.name in ["CREATEFRAME","PUSHFRAME", "POPFRAME",  "DEFVAR"] and 0:
-            print(self.order, self.name)
-            print("---------------------------------------------------")
-            print("GF", framestack.GlobalFrame)
-            print("LF", framestack.LocalFrame)
-            print("TMPF", framestack.TmpFrame)
-            print("framestack", framestack.frameStack)
-            print("---------------------------------------------------")
-        """

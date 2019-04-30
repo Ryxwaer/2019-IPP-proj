@@ -121,11 +121,11 @@ if (
     exit;
 }
 */
-kws();
+//kws();
 $shell_str = "ls " . "$directory";
 $shell_out = shell_exec($shell_str);
 $dir_files = explode("\n", $shell_out);
-var_dump($dir_files);
+//var_dump($dir_files);
 foreach ($dir_files as $key => $value) {
     if (($key == "") || ($value == "")) {
         continue;
